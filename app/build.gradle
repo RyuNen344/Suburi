@@ -81,6 +81,7 @@ android {
         checkDependencies = true
         checkGeneratedSources = false
         checkReleaseBuilds = false
+        sarifReport = true
     }
 
     sourceSets {

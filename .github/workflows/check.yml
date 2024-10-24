@@ -14,6 +14,7 @@ concurrency:
 permissions:
   contents: read
   checks: write
+  issues: write
   pull-requests: write
 
 jobs:
@@ -23,6 +24,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/java
       - uses: ./.github/actions/gradle
+      - uses: reviewdog/action-setup@v1
       - name: run android lint
         shell: bash
         run: |
@@ -31,6 +33,24 @@ jobs:
         shell: bash
         run: |
           ./gradlew detekt
+      - name: run reviewdog review
+        if: ${{ !cancelled() }}
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat app/build/reports/lint-results-debug.sarif | reviewdog -f=sarif -name="android lint" -reporter=github-pr-check
+          cat build/reports/detekt/detekt.xml | reviewdog -f=checkstyle -name="detekt" -reporter=github-pr-check
+      - name: run reviewdog suggest
+        if: ${{ !cancelled() }}
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./gradlew lintFix --continue;
+          ./gradlew detekt -PautoCorrect --continue;
+          TMPFILE=$(mktemp)
+          git diff >"${TMPFILE}"
+          git stash -u && git stash drop
+          reviewdog -f=diff -f.diff.strip=1 -reporter=github-pr-review < "${TMPFILE}"
 
   unit-test:
     runs-on: ubuntu-latest
