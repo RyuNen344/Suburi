@@ -1,0 +1,48 @@
+import io.gitlab.arturbosch.detekt.Detekt
+
+plugins {
+    alias libs.plugins.com.android.application apply false
+    alias libs.plugins.com.google.dagger.hilt apply false
+    alias libs.plugins.com.google.devtools.ksp apply false
+    alias libs.plugins.org.jetbrains.kotlin.android apply false
+    alias libs.plugins.org.jetbrains.kotlin.plugin.compose apply false
+    alias libs.plugins.org.jetbrains.kotlin.plugin.parcelize apply false
+    alias libs.plugins.io.gitlab.arturbosch.detekt
+    alias libs.plugins.nl.littlerobots.version.catalog.update
+}
+
+apply from: rootProject.layout.projectDirectory.file("gradle/resolve-all-dependencies.gradle")
+
+tasks.register('clean', Delete) {
+    group = "clean"
+    delete(rootProject.layout.buildDirectory.get())
+}
+
+detekt {
+    parallel = true
+    autoCorrect = project.providers.gradleProperty("autoCorrect").present
+    config.from = rootProject.layout.projectDirectory.file(".lint/detekt.yml")
+    source.from = rootProject.layout.projectDirectory.asFileTree.matching {
+        include("**/*.kt", "**/*.kts")
+        exclude("**/build/")
+    }
+    baseline = rootProject.layout.projectDirectory.file(".lint/baseline.xml").asFile
+}
+
+tasks.withType(Detekt).configureEach {
+    jvmTarget = libs.versions.jdk.get()
+}
+
+dependencies {
+    detektPlugins(libs.io.gitlab.arturbosch.detekt.formatting)
+    detektPlugins(libs.io.nlopez.compose.rules.detekt)
+}
+
+versionCatalogUpdate {
+    sortByKey = true
+    keep {
+        keepUnusedVersions = true
+        keepUnusedLibraries = true
+        keepUnusedPlugins = true
+    }
+}

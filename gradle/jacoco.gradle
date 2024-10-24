@@ -1,0 +1,79 @@
+tasks.register("jacocoReport", JacocoReport) {
+    group = "verification"
+    reports {
+        xml.required = true
+        csv.required = true
+        html.required = true
+    }
+    sourceDirectories.from.addAll(
+        layout.projectDirectory.dir("src/main/java"),
+        layout.projectDirectory.dir("src/main/kotlin"),
+        layout.buildDirectory.dir("generated/ksp/debug/java"),
+        layout.buildDirectory.dir("generated/ksp/debug/kotlin"),
+        layout.buildDirectory.dir("generated/hilt/component_sources/debug"),
+        layout.buildDirectory.dir("generated/hilt/component_trees/debug"),
+    )
+    classDirectories.from.addAll(
+        [layout.buildDirectory.dir("tmp/kotlin-classes/debug"), layout.buildDirectory.dir("intermediates/javac/debug")].collectMany { dir ->
+            dir.get().asFileTree.matching {
+                excludes.addAll(
+                    [
+                        // android
+                        "**/BuildConfig.*",
+                        // dagger
+                        "**/*_*Factory*",
+                        "**/*_ComponentTreeDeps*",
+                        "**/Hilt_**",
+                        "**/HiltWrapper_*",
+                        "*_Factory*",
+                        "**/*_GeneratedInjector*",
+                        "**/*_HiltComponents*",
+                        "**/*_HiltModules*",
+                        "**/*_HiltModules_BindsModule*",
+                        "**/*_HiltModules_KeyModule*",
+                        "**/*_MembersInjector*",
+                        "**/*_ProvideFactory*",
+                        "**/*_SingletonC*",
+                        "**/*_TestComponentDataSupplier*",
+                        "**/dagger/hilt/internal/aggregatedroot/codegen/**",
+                        "**/hilt_aggregated_deps",
+                    ]
+                )
+            }.files
+        }
+    )
+    executionData.from.addAll(
+        layout.buildDirectory.asFileTree.matching {
+            include("**/*.ec", "**/*.exec")
+        }
+    )
+}
+
+jacoco {
+    toolVersion = libs.versions.jacoco.get()
+}
+
+android {
+    testOptions {
+        unitTests.all { test ->
+            // workaround for jacoco with robolectric
+            jacoco {
+                includeNoLocationClasses = true
+                excludes = [
+                    'kotlin.coroutines.jvm.internal.DebugProbesKt',
+                    'kotlinx.coroutines.debug.internal.DebugProbesKt',
+                    'kotlinx.coroutines.debug.internal.NoOpProbesKt',
+                    'jdk.internal.*'
+                ]
+            }
+        }
+    }
+}
+
+configurations.configureEach {
+    it.resolutionStrategy.eachDependency {
+        if (requested.group == "org.jacoco") {
+            useVersion libs.versions.jacoco.get()
+        }
+    }
+}

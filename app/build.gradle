@@ -1,0 +1,216 @@
+import com.android.build.api.variant.DeviceTestBuilder
+import com.android.build.api.variant.HostTestBuilder
+
+plugins {
+    alias libs.plugins.com.android.application
+    alias libs.plugins.com.google.dagger.hilt
+    alias libs.plugins.com.google.devtools.ksp
+    alias libs.plugins.org.jetbrains.kotlin.android
+    alias libs.plugins.org.jetbrains.kotlin.plugin.compose
+    alias libs.plugins.org.jetbrains.kotlin.plugin.parcelize
+    alias libs.plugins.jacoco
+}
+
+apply from: rootProject.layout.projectDirectory.file("gradle/jacoco.gradle")
+
+def defaultExcludes = []
+def additionalExcludes = [
+    "/META-INF/{AL2.0,LGPL2.1}",
+    "/META-INF/NOTICE*",
+    "/META-INF/licenses/ASM",
+    "/META-INF/LICENSE*",
+    "/LICENSE-junit.txt",
+    "/junit/**"
+]
+
+def defaultPickFirsts = []
+def additionalPickFirsts = [
+    "win32-x86-64/attach_hotspot_windows.dll",
+    "win32-x86/attach_hotspot_windows.dll"
+]
+
+android {
+    namespace 'io.github.ryunen344.suburi'
+    compileSdk 34
+    buildToolsVersion = '35.0.0'
+
+    defaultConfig {
+        applicationId "io.github.ryunen344.suburi"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+
+        testInstrumentationRunner "io.github.ryunen344.suburi.test.dagger.DaggerTestRunner"
+        vectorDrawables {
+            useSupportLibrary true
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
+        compose = true
+    }
+
+    signingConfigs {
+        debug {
+            storeFile = rootProject.layout.projectDirectory.file("keystore/debug.keystore").asFile
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+    buildTypes {
+        debug {
+            signingConfig = signingConfigs.debug
+        }
+
+        release {
+            signingConfig = signingConfigs.debug
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    defaultExcludes += packaging.resources.excludes
+    defaultPickFirsts += packaging.resources.pickFirsts
+
+    lint {
+        lintConfig rootProject.layout.projectDirectory.file(".lint/lint.xml").asFile
+        checkDependencies = true
+        checkGeneratedSources = false
+        checkReleaseBuilds = false
+    }
+
+    sourceSets {
+        def sharedTestDir = "src/sharedTest/java"
+        test {
+            java.srcDir sharedTestDir
+        }
+        androidTest {
+            java.srcDir sharedTestDir
+        }
+    }
+    adbOptions.timeOutInMs = 180000
+    testOptions {
+        unitTests.includeAndroidResources = true
+        unitTests.returnDefaultValues = true
+        unitTests.all { test ->
+            test.systemProperty("robolectric.logging.enabled", "true")
+            test.systemProperty("robolectric.logging", "stdout")
+            test.testLogging.showStandardStreams = true
+        }
+    }
+    compileOptions {
+        coreLibraryDesugaringEnabled true
+        sourceCompatibility libs.versions.jdk.get()
+        targetCompatibility libs.versions.jdk.get()
+    }
+    kotlinOptions {
+        jvmTarget = libs.versions.jdk.get()
+    }
+}
+
+androidComponents {
+    beforeVariants(selector()) { builder ->
+        def debug = builder.buildType == "debug"
+        builder.hostTests[HostTestBuilder.UNIT_TEST_TYPE].enable = debug
+        builder.hostTests[HostTestBuilder.UNIT_TEST_TYPE].enableCodeCoverage = debug
+        builder.hostTests[HostTestBuilder.SCREENSHOT_TEST_TYPE].enable = false
+        builder.deviceTests[DeviceTestBuilder.ANDROID_TEST_TYPE].enable = debug
+        builder.deviceTests[DeviceTestBuilder.ANDROID_TEST_TYPE].enableCodeCoverage = debug
+    }
+    onVariants(selector()) { variant ->
+        def release = variant.buildType == 'release'
+        // resource
+        def excludes
+        def pickFirsts = defaultPickFirsts + additionalPickFirsts
+        if (release) {
+            excludes = defaultExcludes + additionalExcludes + ["DebugProbesKt.bin", "**/attach_hotspot_windows.dll"]
+        } else {
+            excludes = defaultExcludes + additionalExcludes
+        }
+
+        // default apk
+        packaging.resources.excludes.addAll(excludes)
+        variant.packaging.resources.pickFirsts.addAll(pickFirsts)
+
+        // androidTest apk
+        variant.androidTest?.packaging?.resources?.excludes?.addAll(excludes)
+        variant.androidTest?.packaging?.resources?.pickFirsts?.addAll(pickFirsts)
+    }
+}
+
+composeCompiler {
+    metricsDestination = layout.buildDirectory.dir("compose_compiler")
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+    stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
+}
+
+dependencies {
+    coreLibraryDesugaring libs.desugar.jdk.libs
+    implementation libs.androidx.activity.compose
+    implementation libs.androidx.appcompat
+    implementation libs.androidx.collection
+    implementation libs.androidx.compose.animation
+    implementation libs.androidx.compose.foundation
+    implementation libs.androidx.compose.ui
+    implementation libs.androidx.compose.ui.graphics
+    debugImplementation libs.androidx.compose.ui.tooling
+    implementation libs.androidx.compose.ui.tooling.preview
+    implementation libs.androidx.compose.material
+    implementation libs.androidx.compose.material3
+    implementation libs.androidx.compose.runtime
+    implementation libs.androidx.compose.runtime.tracing
+    implementation libs.androidx.core
+    implementation libs.androidx.core.splashscreen
+    implementation libs.androidx.lifecycle.runtime
+    implementation libs.androidx.lifecycle.viewmodel
+    implementation libs.androidx.lifecycle.viewmodel.compose
+    implementation libs.androidx.navigation.compose
+    implementation libs.androidx.palette
+    implementation libs.androidx.hilt.navigation.compose
+    implementation libs.com.google.dagger.hilt.android
+    ksp libs.androidx.hilt.compiler
+    ksp libs.com.google.dagger.hilt.compiler
+    implementation libs.org.jetbrains.kotlinx.coroutine.android
+
+    // test
+    testImplementation libs.junit
+    testImplementation libs.com.google.truth.truth
+    testImplementation libs.androidx.test.core
+    testImplementation libs.androidx.test.rules
+    testImplementation libs.androidx.test.runner
+    testImplementation libs.androidx.test.ext.junit
+    testImplementation libs.androidx.test.ext.truth
+    testImplementation libs.com.google.dagger.hilt.android.test
+    testImplementation libs.io.mockk
+    testImplementation libs.io.mockk.agent
+    testImplementation libs.app.cash.turbine
+    testImplementation libs.org.jetbrains.kotlin.test
+    testImplementation libs.org.jetbrains.kotlinx.coroutine.debug
+    testImplementation libs.org.jetbrains.kotlinx.coroutine.test
+    testImplementation libs.org.robolectric.robolectric
+
+    // androidTest
+    androidTestImplementation libs.junit
+    androidTestImplementation libs.com.google.truth.truth
+    androidTestImplementation libs.androidx.test.core
+    androidTestImplementation libs.androidx.test.rules
+    androidTestImplementation libs.androidx.test.runner
+    androidTestImplementation libs.androidx.test.ext.junit
+    androidTestImplementation libs.androidx.test.ext.truth
+    androidTestImplementation libs.com.google.dagger.hilt.android.test
+    androidTestImplementation libs.io.mockk
+    androidTestImplementation libs.io.mockk.android
+    androidTestImplementation libs.app.cash.turbine
+    androidTestImplementation libs.org.jetbrains.kotlin.test
+    androidTestImplementation libs.org.jetbrains.kotlinx.coroutine.debug
+    androidTestImplementation libs.org.jetbrains.kotlinx.coroutine.test
+
+    androidTestImplementation libs.androidx.test.espresso.core
+    androidTestImplementation libs.androidx.test.uiautomator
+    androidTestImplementation libs.androidx.compose.ui.test.junit4
+    debugImplementation libs.androidx.compose.ui.test.manifest
+}
