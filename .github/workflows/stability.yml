@@ -22,3 +22,37 @@ jobs:
           gradle-version: wrapper
           dependency-resolution-task: 'resolveAllDependencies'
           validate-wrappers: true
+
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/java
+      - uses: ./.github/actions/gradle
+      - name: unit test
+        shell: bash
+        run: |
+          ./gradlew testDebugUnitTest
+      - uses: EnricoMi/publish-unit-test-result-action@v2
+        if: ${{ !cancelled() }}
+        with:
+          check_name: unit-test
+          files: |
+            **/test-results/**/*.xml
+
+  android-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/java
+      - uses: ./.github/actions/gradle
+      - uses: ./.github/actions/avd
+        with:
+          prepare-script: ./gradlew assembleDebug
+          script: ./gradlew connectedDebugAndroidTest
+      - uses: EnricoMi/publish-unit-test-result-action@v2
+        if: ${{ !cancelled() }}
+        with:
+          check_name: android-test
+          files: |
+            **/outputs/androidTest-results/connected/**/*.xml
