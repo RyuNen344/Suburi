@@ -47,10 +47,10 @@ jobs:
         run: |
           ./gradlew lintFix --continue;
           ./gradlew detekt -PautoCorrect --continue;
-          TMPFILE=$(mktemp)
-          git diff >"${TMPFILE}"
-          git stash -u && git stash drop
-          reviewdog -f=diff -f.diff.strip=1 -reporter=github-pr-review < "${TMPFILE}"
+          TMPFILE=$(mktemp);
+          git diff >"${TMPFILE}";
+          git stash -u || git stash drop;
+          cat "${TMPFILE}" | reviewdog -f=diff -f.diff.strip=1 -reporter=github-pr-review;
 
   unit-test:
     runs-on: ubuntu-latest
