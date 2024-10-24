@@ -1,0 +1,17 @@
+name: "setup gradle"
+description: "setup gradle"
+runs:
+  using: "composite"
+  steps:
+    - name: setup gradle
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        gradle-version: wrapper
+        cache-cleanup: always
+        add-job-summary-as-pr-comment: on-failure
+        artifact-retention-days: 3
+
+    - name: list toolchain
+      shell: bash
+      run: |
+        ./gradlew -q javaToolchains --no-daemon

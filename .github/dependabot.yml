@@ -1,0 +1,41 @@
+# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    groups:
+      compose:
+        patterns:
+          - "androidx.compose*"
+          - "androidx.constraintlayout:constraintlayout-compose*"
+      dagger:
+        patterns:
+          - "com.google.dagger*"
+          - "androidx.hilt*"
+    # https://docs.github.com/ja/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#open-pull-requests-limit
+    # default: 5
+    open-pull-requests-limit: 15
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 15
+
+  # https://github.com/dependabot/dependabot-core/issues/5137
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/avd"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/gradle"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/java"
+    schedule:
+      interval: "daily"

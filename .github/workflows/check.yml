@@ -1,0 +1,67 @@
+name: check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+concurrency:
+  group: ${{ github.workflows }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/java
+      - uses: ./.github/actions/gradle
+      - name: run android lint
+        shell: bash
+        run: |
+          ./gradlew :app:lintDebug
+      - name: run detekt
+        shell: bash
+        run: |
+          ./gradlew detekt
+
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/java
+      - uses: ./.github/actions/gradle
+      - name: unit test
+        shell: bash
+        run: |
+          ./gradlew testDebugUnitTest
+      - uses: EnricoMi/publish-unit-test-result-action@v2
+        if: ${{ !cancelled() }}
+        with:
+          check_name: unit-test
+          files: |
+            **/test-results/**/*.xml
+
+  android-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/java
+      - uses: ./.github/actions/gradle
+      - uses: ./.github/actions/avd
+        with:
+          prepare-script: ./gradlew assembleDebug
+          script: ./gradlew connectedDebugAndroidTest
+      - uses: EnricoMi/publish-unit-test-result-action@v2
+        if: ${{ !cancelled() }}
+        with:
+          check_name: android-test
+          files: |
+            **/outputs/androidTest-results/connected/**/*.xml
