@@ -17,10 +17,7 @@ import io.github.ryunen344.suburi.ui.theme.SuburiTheme
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-
-
-    override fun onCreate(savedInstanceState:
-                          Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -47,7 +44,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+private fun GreetingPreview() {
     SuburiTheme {
         Greeting("Android")
     }
