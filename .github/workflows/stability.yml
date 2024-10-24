@@ -39,7 +39,7 @@ jobs:
       - uses: EnricoMi/publish-unit-test-result-action@v2
         if: ${{ !cancelled() }}
         with:
-          check_name: unit-test
+          check_name: unit-test-result
           files: |
             **/test-results/**/*.xml
 
@@ -56,6 +56,6 @@ jobs:
       - uses: EnricoMi/publish-unit-test-result-action@v2
         if: ${{ !cancelled() }}
         with:
-          check_name: android-test
+          check_name: android-test-result
           files: |
             **/outputs/androidTest-results/connected/**/*.xml

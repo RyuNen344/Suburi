@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Suburi</string>
+    <string name="unused_res">Test Lint</string>
 </resources>

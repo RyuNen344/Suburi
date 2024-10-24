@@ -38,8 +38,8 @@ jobs:
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cat app/build/reports/lint-results-debug.sarif | reviewdog -f=sarif -name="android lint" -reporter=github-pr-check
-          cat build/reports/detekt/detekt.xml | reviewdog -f=checkstyle -name="detekt" -reporter=github-pr-check
+          cat app/build/reports/lint-results-debug.sarif | reviewdog -f=sarif -name="android lint" -reporter=github-pr-review;
+          cat build/reports/detekt/detekt.xml | reviewdog -f=checkstyle -name="detekt" -reporter=github-pr-review;
       - name: run reviewdog suggest
         if: ${{ !cancelled() }}
         env:
@@ -65,7 +65,7 @@ jobs:
       - uses: EnricoMi/publish-unit-test-result-action@v2
         if: ${{ !cancelled() }}
         with:
-          check_name: unit-test
+          check_name: unit-test-result
           files: |
             **/test-results/**/*.xml
 
@@ -82,6 +82,6 @@ jobs:
       - uses: EnricoMi/publish-unit-test-result-action@v2
         if: ${{ !cancelled() }}
         with:
-          check_name: android-test
+          check_name: android-test-result
           files: |
             **/outputs/androidTest-results/connected/**/*.xml
