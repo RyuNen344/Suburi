@@ -14,6 +14,7 @@ concurrency:
 permissions:
   contents: read
   checks: write
+  issues: write
   pull-requests: write
 
 jobs:
@@ -23,6 +24,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/java
       - uses: ./.github/actions/gradle
+      - uses: reviewdog/action-setup@v1
       - name: run android lint
         shell: bash
         run: |
@@ -31,6 +33,23 @@ jobs:
         shell: bash
         run: |
           ./gradlew detekt
+      - name: run reviewdog review
+        if: ${{ !cancelled() }}
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat app/build/reports/lint-results-debug.sarif | reviewdog -f=sarif -name="android lint" -reporter=github-pr-review;
+          cat build/reports/detekt/detekt.xml | reviewdog -f=checkstyle -name="detekt" -reporter=github-pr-review;
+      - name: run reviewdog suggest
+        if: ${{ !cancelled() }}
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./gradlew lintFix detekt -PautoCorrect --quiet --continue || true;
+          TMPFILE=$(mktemp);
+          git diff >"${TMPFILE}";
+          git stash -u || git stash drop;
+          cat "${TMPFILE}" | reviewdog -f=diff -f.diff.strip=1 -reporter=github-pr-review;
 
   unit-test:
     runs-on: ubuntu-latest
@@ -45,7 +64,7 @@ jobs:
       - uses: EnricoMi/publish-unit-test-result-action@v2
         if: ${{ !cancelled() }}
         with:
-          check_name: unit-test
+          check_name: unit-test-result
           files: |
             **/test-results/**/*.xml
 
@@ -62,6 +81,6 @@ jobs:
       - uses: EnricoMi/publish-unit-test-result-action@v2
         if: ${{ !cancelled() }}
         with:
-          check_name: android-test
+          check_name: android-test-result
           files: |
             **/outputs/androidTest-results/connected/**/*.xml

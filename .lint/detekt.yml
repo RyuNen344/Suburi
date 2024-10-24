@@ -819,7 +819,8 @@ formatting:
     autoCorrect: true
     indentSize: 4
   ClassName:
-    active: false
+    active: true
+    autoCorrect: true
   CommentSpacing:
     active: true
     autoCorrect: true

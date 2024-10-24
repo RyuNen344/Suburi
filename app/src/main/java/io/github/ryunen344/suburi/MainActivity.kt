@@ -17,7 +17,6 @@ import io.github.ryunen344.suburi.ui.theme.SuburiTheme
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
