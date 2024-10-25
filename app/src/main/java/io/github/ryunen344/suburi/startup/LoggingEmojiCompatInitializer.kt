@@ -98,7 +98,7 @@ class LoggingEmojiCompatInitializer : Initializer<Unit> {
                 if (EmojiCompat.isConfigured()) {
                     EmojiCompat.get().load()
                 } else {
-                    Timber.d("EmojiCompat has already configured")
+                    Timber.d("EmojiCompat has not configured, yet")
                 }
             } finally {
                 Trace.endSection()
