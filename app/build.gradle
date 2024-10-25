@@ -166,9 +166,11 @@ dependencies {
     implementation libs.androidx.compose.runtime.tracing
     implementation libs.androidx.core
     implementation libs.androidx.core.splashscreen
+    implementation libs.androidx.emoji2
     implementation libs.androidx.lifecycle.runtime
     implementation libs.androidx.lifecycle.viewmodel
     implementation libs.androidx.lifecycle.viewmodel.compose
+    implementation libs.androidx.lifecycle.process
     implementation libs.androidx.navigation.compose
     implementation libs.androidx.palette
     implementation libs.androidx.startup.runtime

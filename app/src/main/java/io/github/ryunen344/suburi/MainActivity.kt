@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -24,10 +25,19 @@ class MainActivity : AppCompatActivity() {
         setContent {
             SuburiTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding),
-                    )
+                    Column(
+                        modifier = Modifier.padding(innerPadding)
+                    ) {
+                        Greeting(
+                            name = "Android",
+                        )
+                        Greeting(
+                            name = "😀",
+                        )
+                        Greeting(
+                            name = "😭",
+                        )
+                    }
                 }
             }
         }
