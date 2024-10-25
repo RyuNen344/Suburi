@@ -23,7 +23,7 @@ class StrictModeInitializer : Initializer<Unit> {
                                 penaltyListener(ContextCompat.getMainExecutor(context), Timber::e)
                             }
                         }
-                        .build()
+                        .build(),
                 )
             }.onFailure {
                 Timber.e(it)
