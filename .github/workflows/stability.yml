@@ -56,7 +56,7 @@ jobs:
       - name: run android test
         uses: ./.github/actions/avd
         with:
-          prepare-script: ./gradlew assembleDebug
+          prepare-script: ./gradlew assembleDebug assembleDebugAndroidTest
           script: ./gradlew connectedDebugAndroidTest
       - uses: dorny/test-reporter@v1
         if: ${{ !cancelled() }}
