@@ -28,7 +28,7 @@ class WebViewInitializer : Initializer<Unit> {
                         append(packageInfo.versionCode)
                     }
                     append(")")
-                }
+                },
             )
         } else {
             Timber.d("WebView package not found")
