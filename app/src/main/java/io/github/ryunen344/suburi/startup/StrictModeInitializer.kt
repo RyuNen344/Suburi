@@ -18,9 +18,10 @@ class StrictModeInitializer : Initializer<Unit> {
                     StrictMode.ThreadPolicy.Builder()
                         .apply {
                             detectAll()
-                            penaltyLog()
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                                 penaltyListener(ContextCompat.getMainExecutor(context), Timber::e)
+                            } else {
+                                penaltyLog()
                             }
                         }
                         .build(),
@@ -36,9 +37,10 @@ class StrictModeInitializer : Initializer<Unit> {
                     StrictMode.VmPolicy.Builder()
                         .apply {
                             detectAll()
-                            penaltyLog()
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                                 penaltyListener(ContextCompat.getMainExecutor(context), Timber::e)
+                            } else {
+                                penaltyLog()
                             }
                         }
                         .build(),
