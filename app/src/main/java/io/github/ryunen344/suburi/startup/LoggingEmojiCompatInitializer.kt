@@ -47,7 +47,7 @@ class LoggingEmojiCompatInitializer : Initializer<Unit> {
                             override fun onFailed(throwable: Throwable?) {
                                 Timber.e(throwable, "EmojiCompat initialization failed")
                             }
-                        }
+                        },
                     )
                     if (this is FontRequestEmojiCompatConfig) {
                         setLoadingExecutor(
