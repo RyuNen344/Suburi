@@ -1,3 +1,4 @@
+# $schema: https://json.schemastore.org/github-action.json
 name: "setup gradle"
 description: "setup gradle"
 runs:
@@ -8,10 +9,9 @@ runs:
       with:
         gradle-version: wrapper
         cache-cleanup: always
-        add-job-summary-as-pr-comment: on-failure
         artifact-retention-days: 3
 
     - name: list toolchain
       shell: bash
       run: |
-        ./gradlew -q javaToolchains --no-daemon
+        ./gradlew -q javaToolchains

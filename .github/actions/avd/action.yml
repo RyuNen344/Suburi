@@ -1,3 +1,4 @@
+# $schema: https://json.schemastore.org/github-action.json
 name: "setup KVM"
 description: "setup KVM group for Android Emulator"
 inputs:
