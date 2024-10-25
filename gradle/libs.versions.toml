@@ -39,7 +39,7 @@ mockk = "1.13.13"
 robolectric = "4.13"
 timber = "5.0.1"
 turbine = "1.2.0"
-version-catalog-update = "0.8.4"
+version-catalog-update = "0.8.5"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }

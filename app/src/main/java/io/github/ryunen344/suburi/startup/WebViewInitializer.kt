@@ -9,7 +9,6 @@ import io.github.ryunen344.suburi.BuildConfig
 import timber.log.Timber
 
 class WebViewInitializer : Initializer<Unit> {
-
     override fun create(context: Context) {
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
         val packageInfo = WebViewCompat.getCurrentWebViewPackage(context)
