@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity() {
             SuburiTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Column(
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding),
                     ) {
                         Greeting(
                             name = "Android",
