@@ -45,4 +45,5 @@ run fcopy ".*/build/outputs/.*.apk"
 
 run rm -rf "$_ARTIFACT_DIRECTORY_/artifact"
 run zip -r artifact.zip artifact
+sleep 5
 run rm -rf "$_ARTIFACT_DIRECTORY_";
