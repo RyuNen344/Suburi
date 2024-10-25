@@ -1,3 +1,4 @@
+# $schema: https://json.schemastore.org/github-workflow.json
 name: stability
 
 on:
@@ -10,13 +11,15 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
   checks: write
   pull-requests: write
 
 jobs:
   dependency-report:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/java
@@ -32,16 +35,17 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/java
       - uses: ./.github/actions/gradle
-      - name: unit test
+      - name: run unit test
         shell: bash
         run: |
           ./gradlew testDebugUnitTest
-      - uses: EnricoMi/publish-unit-test-result-action@v2
+      - uses: dorny/test-reporter@v1
         if: ${{ !cancelled() }}
         with:
-          check_name: unit-test-result
-          files: |
-            **/test-results/**/*.xml
+          name: unit-test-result
+          path: '**/test-results/**/*.xml'
+          reporter: java-junit
+          fail-on-error: false
 
   android-test:
     runs-on: ubuntu-latest
@@ -49,13 +53,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/java
       - uses: ./.github/actions/gradle
-      - uses: ./.github/actions/avd
+      - name: run android test
+        uses: ./.github/actions/avd
         with:
           prepare-script: ./gradlew assembleDebug
           script: ./gradlew connectedDebugAndroidTest
-      - uses: EnricoMi/publish-unit-test-result-action@v2
+      - uses: dorny/test-reporter@v1
         if: ${{ !cancelled() }}
         with:
-          check_name: android-test-result
-          files: |
-            **/outputs/androidTest-results/connected/**/*.xml
+          name: android-test-result
+          path: '**/outputs/androidTest-results/connected/**/*.xml'
+          reporter: java-junit
+          fail-on-error: false

@@ -1,3 +1,4 @@
+# $schema: https://json.schemastore.org/github-workflow.json
 name: check
 
 on:
@@ -57,16 +58,28 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/java
       - uses: ./.github/actions/gradle
-      - name: unit test
+      - name: run unit test
         shell: bash
         run: |
           ./gradlew testDebugUnitTest
-      - uses: EnricoMi/publish-unit-test-result-action@v2
+      - uses: dorny/test-reporter@v1
         if: ${{ !cancelled() }}
         with:
-          check_name: unit-test-result
-          files: |
-            **/test-results/**/*.xml
+          name: unit-test-result
+          path: '**/test-results/**/*.xml'
+          reporter: java-junit
+          fail-on-error: false
+      - name: zip coverage data
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          chmod +x ./scripts/zip-build-data.sh && ./scripts/zip-build-data.sh;
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: unit-test-artifact
+          retention-days: 1
+          path: artifact.zip
 
   android-test:
     runs-on: ubuntu-latest
@@ -74,13 +87,58 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/java
       - uses: ./.github/actions/gradle
-      - uses: ./.github/actions/avd
+      - name: run android test
+        uses: ./.github/actions/avd
         with:
           prepare-script: ./gradlew assembleDebug
           script: ./gradlew connectedDebugAndroidTest
-      - uses: EnricoMi/publish-unit-test-result-action@v2
+      - uses: dorny/test-reporter@v1
         if: ${{ !cancelled() }}
         with:
-          check_name: android-test-result
-          files: |
-            **/outputs/androidTest-results/connected/**/*.xml
+          name: android-test-result
+          path: '**/outputs/androidTest-results/connected/**/*.xml'
+          reporter: java-junit
+          fail-on-error: false
+      - name: zip coverage data
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          chmod +x ./scripts/zip-build-data.sh && ./scripts/zip-build-data.sh;
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: android-test-artifact
+          retention-days: 1
+          path: artifact.zip
+
+  coverage:
+    runs-on: ubuntu-latest
+    if: ${{ !cancelled() }}
+    needs:
+      - unit-test
+      - android-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/java
+      - uses: ./.github/actions/gradle
+      - uses: actions/download-artifact@v4
+      - name: restore data
+        shell: bash
+        run: |
+          unzip -o unit-test-artifact/artifact.zip
+          unzip -o android-test-artifact/artifact.zip
+          \cp -rf artifact/* .
+          rm -rf artifact
+      - name: run jacoco
+        shell: bash
+        run: |
+          ./gradlew jacocoReport
+      - uses: madrapps/jacoco-report@v1.7.2-beta
+        with:
+          paths: |
+            ${{ github.workspace }}/app/build/reports/jacoco/jacocoReport/jacocoReport.xml
+          update-comment: true
+          comment-type: both
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 0
+          min-coverage-changed-files: 0
