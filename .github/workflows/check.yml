@@ -73,7 +73,8 @@ jobs:
         if: ${{ !cancelled() }}
         shell: bash
         run: |
-          sh ./scripts/zip-build-data.sh
+          chmod +x ./scripts/zip-build-data.sh;
+          sh ./scripts/zip-build-data.sh;
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
@@ -103,7 +104,8 @@ jobs:
         if: ${{ !cancelled() }}
         shell: bash
         run: |
-          sh ./scripts/zip-build-data.sh
+          chmod +x ./scripts/zip-build-data.sh;
+          sh ./scripts/zip-build-data.sh;
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
