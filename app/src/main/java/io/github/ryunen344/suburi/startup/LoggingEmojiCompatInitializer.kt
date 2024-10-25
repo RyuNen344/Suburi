@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Looper
 import android.os.Process
-import android.os.Trace
 import androidx.core.os.HandlerCompat
 import androidx.emoji2.text.DefaultEmojiCompatConfig
 import androidx.emoji2.text.EmojiCompat
@@ -14,6 +13,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleInitializer
 import androidx.startup.AppInitializer
 import androidx.startup.Initializer
+import androidx.tracing.Trace
 import io.github.ryunen344.suburi.BuildConfig
 import timber.log.Timber
 import java.util.concurrent.LinkedBlockingDeque
