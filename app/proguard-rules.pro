@@ -1,10 +1,21 @@
 -printconfiguration proguard-rules-merged.pro
 
+# strip Loccat
+## https://source.android.com/docs/core/tests/debug/understanding-logging#log-standards
+-assumenosideeffects class android.util.Log {
+  static *** v(...);
+  static *** d(...);
+  static *** i(...);
+  static *** w(...);
+  static *** e(...);
+  static *** wtf(...);
+  static *** isLoggable(...);
+}
+
 # androidx.compose.runtime:runtime-tracing
 ## https://developer.android.com/develop/ui/compose/tooling/tracing#apk_size_overhead
 -assumenosideeffects public class androidx.compose.runtime.ComposerKt {
    boolean isTraceInProgress();
-   void traceEventStart(int, java.lang.String);
    void traceEventStart(int,int,int,java.lang.String);
    void traceEventEnd();
 }
