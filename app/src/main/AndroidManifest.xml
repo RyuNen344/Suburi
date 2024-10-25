@@ -44,6 +44,15 @@
             <meta-data
                 android:name="io.github.ryunen344.suburi.startup.WebViewInitializer"
                 android:value="androidx.startup" />
+
+            <meta-data
+                android:name="io.github.ryunen344.suburi.startup.LoggingEmojiCompatInitializer"
+                android:value="androidx.startup" />
+
+            <meta-data
+                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
         </provider>
 
     </application>

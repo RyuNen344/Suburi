@@ -90,7 +90,7 @@ jobs:
       - name: run android test
         uses: ./.github/actions/avd
         with:
-          prepare-script: ./gradlew assembleDebug
+          prepare-script: ./gradlew assembleDebug assembleDebugAndroidTest
           script: ./gradlew connectedDebugAndroidTest
       - uses: dorny/test-reporter@v1
         if: ${{ !cancelled() }}
@@ -137,6 +137,7 @@ jobs:
         with:
           paths: |
             ${{ github.workspace }}/app/build/reports/jacoco/jacocoReport/jacocoReport.xml
+          title: coverage report
           update-comment: true
           comment-type: both
           token: ${{ secrets.GITHUB_TOKEN }}
