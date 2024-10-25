@@ -72,6 +72,9 @@ class LoggingEmojiCompatInitializer : Initializer<Unit> {
         return listOf(TimberInitializer::class.java, ProcessLifecycleInitializer::class.java)
     }
 
+    /**
+     * see also [androidx.emoji2.text.EmojiCompatInitializer.delayUntilFirstResume]
+     */
     private fun delayUntilFirstResume(context: Context) {
         val initializer = AppInitializer.getInstance(context)
         val lifecycle = initializer.initializeComponent(ProcessLifecycleInitializer::class.java).lifecycle
@@ -83,6 +86,9 @@ class LoggingEmojiCompatInitializer : Initializer<Unit> {
         })
     }
 
+    /**
+     * see also [androidx.emoji2.text.EmojiCompatInitializer.loadEmojiCompatAfterDelay]
+     */
     private fun loadEmojiCompatAfterDelay() {
         val handler = HandlerCompat.createAsync(Looper.getMainLooper())
         handler.postDelayed(LoadEmojiCompatRunnable(), STARTUP_THREAD_CREATION_DELAY_MS)
