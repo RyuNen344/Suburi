@@ -58,7 +58,7 @@ class LoggingEmojiCompatInitializer : Initializer<Unit> {
                                 TimeUnit.SECONDS,
                                 LinkedBlockingDeque(),
                                 ThreadFactory { Thread(it, THREAD_NAME).apply { priority = Process.THREAD_PRIORITY_BACKGROUND } },
-                            )
+                            ),
                         )
                     }
                 }
