@@ -67,7 +67,7 @@ jobs:
         with:
           name: unit-test-result
           path: '**/test-results/**/*.xml'
-          reporter: jest-junit
+          reporter: java-junit
           fail-on-error: false
       - name: zip coverage data
         if: ${{ !cancelled() }}
@@ -97,7 +97,7 @@ jobs:
         with:
           name: android-test-result
           path: '**/outputs/androidTest-results/connected/**/*.xml'
-          reporter: jest-junit
+          reporter: java-junit
           fail-on-error: false
       - name: zip coverage data
         if: ${{ !cancelled() }}
