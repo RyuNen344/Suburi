@@ -125,13 +125,8 @@ androidComponents {
     onVariants(selector()) { variant ->
         def release = variant.buildType == 'release'
         // resource
-        def excludes
+        def excludes = release ? defaultExcludes + additionalExcludes + ["DebugProbesKt.bin", "**/attach_hotspot_windows.dll"] : defaultExcludes + additionalExcludes
         def pickFirsts = defaultPickFirsts + additionalPickFirsts
-        if (release) {
-            excludes = defaultExcludes + additionalExcludes + ["DebugProbesKt.bin", "**/attach_hotspot_windows.dll"]
-        } else {
-            excludes = defaultExcludes + additionalExcludes
-        }
 
         // default apk
         packaging.resources.excludes.addAll(excludes)
@@ -180,6 +175,7 @@ dependencies {
     implementation libs.com.google.dagger.hilt.android
     ksp libs.androidx.hilt.compiler
     ksp libs.com.google.dagger.hilt.compiler
+    implementation libs.org.jetbrains.kotlinx.atomicfu
     implementation libs.org.jetbrains.kotlinx.coroutine.android
     implementation libs.timber
 
