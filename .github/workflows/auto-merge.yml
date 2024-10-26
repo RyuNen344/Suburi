@@ -11,7 +11,7 @@ jobs:
   enable-auto-merge:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       issues: write
       checks: write
       pull-requests: write
