@@ -110,6 +110,49 @@ android {
     }
     kotlinOptions {
         jvmTarget = libs.versions.jdk.get()
+        options.optIn = [
+            // compose animation
+            'androidx.compose.animation.core.ExperimentalAnimatableApi',
+            'androidx.compose.animation.core.ExperimentalAnimationSpecApi',
+            'androidx.compose.animation.core.ExperimentalTransitionApi',
+
+            // compose foundation
+            'androidx.compose.foundation.ExperimentalFoundationApi',
+            'androidx.compose.foundation.layout.ExperimentalLayoutApi',
+
+            // compose material
+            'androidx.compose.material3.ExperimentalMaterial3Api',
+            'androidx.compose.material.ExperimentalMaterialApi',
+
+            // compose runtime
+            'androidx.compose.runtime.ExperimentalComposeApi',
+            'androidx.compose.runtime.ExperimentalComposeRuntimeApi',
+
+            // compose ui
+            'androidx.compose.ui.graphics.ExperimentalGraphicsApi',
+            'androidx.compose.ui.test.ExperimentalTestApi',
+            'androidx.compose.ui.test.InternalTestApi',
+            'androidx.compose.ui.text.ExperimentalTextApi',
+            'androidx.compose.ui.unit.ExperimentalUnitApi',
+            'androidx.compose.ui.ExperimentalComposeUiApi',
+            'androidx.compose.ui.InternalComposeUiApi',
+
+            // kotlin
+            'kotlin.ExperimentalMultiplatform',
+            'kotlin.ExperimentalStdlibApi',
+            'kotlin.ExperimentalSubclassOptIn',
+            'kotlin.contracts.ExperimentalContracts',
+            'kotlin.io.encoding.ExperimentalEncodingApi',
+
+            // kotlinx
+            'kotlinx.coroutines.DelicateCoroutinesApi',
+            'kotlinx.coroutines.ExperimentalCoroutinesApi',
+            'kotlinx.coroutines.FlowPreview',
+            'kotlinx.coroutines.ObsoleteCoroutinesApi',
+            'kotlinx.coroutines.InternalCoroutinesApi',
+            'kotlinx.coroutines.ExperimentalForInheritanceCoroutinesApi',
+            'kotlinx.coroutines.InternalForInheritanceCoroutinesApi',
+        ]
     }
 }
 
