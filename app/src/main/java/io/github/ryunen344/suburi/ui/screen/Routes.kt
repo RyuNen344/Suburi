@@ -206,7 +206,7 @@ fun NavGraphBuilder.routes(
             this.popEnterTransition = popEnterTransition
             this.popExitTransition = popExitTransition
             this.sizeTransform = sizeTransform
-        }
+        },
     )
 }
 
