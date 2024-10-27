@@ -198,7 +198,7 @@ fun NavGraphBuilder.routes(
             provider[ComposeNavigator::class],
             route,
             route.typeMap,
-            content
+            content,
         ).apply {
             route.deepLinks.forEach { deepLink -> deepLink(deepLink) }
             this.enterTransition = enterTransition
