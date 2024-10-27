@@ -54,7 +54,7 @@ class MainActivity : AppCompatActivity() {
                             },
                             onClickStructure = {
                                 navController.navigate(Routes.Structures(Structure.random()))
-                            }
+                            },
                         )
                     }
                     routes<Routes.Uuid> {
