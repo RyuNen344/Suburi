@@ -11,7 +11,7 @@ class TimberInitializer : Initializer<Unit> {
         Timber.plant(tree)
         val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { t, e ->
-            Timber.e(e)
+            Timber.tag("TimberAndroidRuntime").e(e)
             defaultHandler?.uncaughtException(t, e)
         }
     }
