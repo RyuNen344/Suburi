@@ -40,6 +40,7 @@ junit = "4.13.2"
 kotlin = "2.0.21"
 mockk = "1.13.13"
 robolectric = "4.13"
+serialization = "1.7.3"
 timber = "5.0.1"
 turbine = "1.2.0"
 version-catalog-update = "0.8.5"
@@ -98,6 +99,7 @@ org-jetbrains-kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", ve
 org-jetbrains-kotlinx-coroutine-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 org-jetbrains-kotlinx-coroutine-debug = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-debug", version.ref = "coroutines" }
 org-jetbrains-kotlinx-coroutine-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+org-jetbrains-kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "serialization" }
 org-robolectric-robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 
@@ -111,3 +113,4 @@ nl-littlerobots-version-catalog-update = { id = "nl.littlerobots.version-catalog
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 org-jetbrains-kotlin-plugin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 org-jetbrains-kotlin-plugin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
+org-jetbrains-kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
