@@ -12,7 +12,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import io.github.ryunen344.suburi.ui.screen.WrappedUuid
 
 @Composable
-fun UuidScreen(
+internal fun UuidScreen(
     uuid: WrappedUuid,
     viewModel: UuidViewModel = hiltViewModel(),
 ) {

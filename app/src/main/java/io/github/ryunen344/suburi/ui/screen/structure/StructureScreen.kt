@@ -12,7 +12,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import io.github.ryunen344.suburi.ui.screen.Structure
 
 @Composable
-fun StructureScreen(
+internal fun StructureScreen(
     structure: Structure,
     viewModel: StructureViewModel = hiltViewModel(),
 ) {

@@ -12,7 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import io.github.ryunen344.suburi.ui.theme.SuburiTheme
 
 @Composable
-fun TopScreen(onClickUuid: () -> Unit, onClickStructure: () -> Unit) {
+internal fun TopScreen(onClickUuid: () -> Unit, onClickStructure: () -> Unit) {
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding),
