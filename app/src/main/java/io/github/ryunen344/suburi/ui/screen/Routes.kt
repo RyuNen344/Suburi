@@ -61,7 +61,7 @@ val <T : Routes>  KClass<T>.deepLinks: List<NavDeepLink>
     get() = when (this) {
         Routes.Top::class -> emptyList()
         Routes.Uuid::class -> listOf(
-            navDeepLink<Routes.Uuid>(basePath = "https://www.example.com/uuid", typeMap = WrappedUuid.typeMap)
+            navDeepLink<Routes.Uuid>(basePath = "https://www.example.com/uuid", typeMap = WrappedUuid.typeMap),
         )
 
         Routes.Structures::class -> emptyList()
