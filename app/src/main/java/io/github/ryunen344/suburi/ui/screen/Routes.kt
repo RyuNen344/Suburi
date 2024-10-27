@@ -49,7 +49,7 @@ sealed class Routes {
     data class Structures(val structure: Structure) : Routes()
 }
 
-inline val <reified T : Routes>  KClass<T>.typeMap: Map<KType, @JvmSuppressWildcards NavType<*>>
+inline val <reified T : Routes> KClass<T>.typeMap: Map<KType, @JvmSuppressWildcards NavType<*>>
     get() = when (this) {
         Routes.Top::class -> emptyMap()
         Routes.Uuid::class -> WrappedUuid.typeMap
