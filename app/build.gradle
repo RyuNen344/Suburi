@@ -8,6 +8,7 @@ plugins {
     alias libs.plugins.org.jetbrains.kotlin.android
     alias libs.plugins.org.jetbrains.kotlin.plugin.compose
     alias libs.plugins.org.jetbrains.kotlin.plugin.parcelize
+    alias libs.plugins.org.jetbrains.kotlin.plugin.serialization
     alias libs.plugins.jacoco
 }
 
@@ -220,6 +221,7 @@ dependencies {
     ksp libs.com.google.dagger.hilt.compiler
     implementation libs.org.jetbrains.kotlinx.atomicfu
     implementation libs.org.jetbrains.kotlinx.coroutine.android
+    implementation libs.org.jetbrains.kotlinx.serialization.core
     implementation libs.timber
 
     // test

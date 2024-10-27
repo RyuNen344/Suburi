@@ -6,7 +6,10 @@ import android.os.StrictMode
 import androidx.core.content.ContextCompat
 import androidx.startup.Initializer
 import io.github.ryunen344.suburi.BuildConfig
+import kotlinx.coroutines.newFixedThreadPoolContext
+import kotlinx.coroutines.runBlocking
 import timber.log.Timber
+import kotlin.reflect.typeOf
 
 class StrictModeInitializer : Initializer<Unit> {
     override fun create(context: Context) {
@@ -17,6 +20,9 @@ class StrictModeInitializer : Initializer<Unit> {
                 StrictMode.setThreadPolicy(
                     StrictMode.ThreadPolicy.Builder()
                         .apply {
+                            runBlocking(newFixedThreadPoolContext(1, "StrictModeInitializer")) {
+                                typeOf<StrictModeInitializer>()
+                            }
                             detectAll()
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                                 penaltyListener(ContextCompat.getMainExecutor(context), Timber::e)

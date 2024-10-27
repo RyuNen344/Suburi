@@ -10,6 +10,9 @@ go_to_repo_root
 arg=$1
 uri=""
 case "$arg" in
+  "example" )
+    uri="https://www.example.com/uuid/47277417-a40f-43ac-9d27-009835c3e3a4"
+    ;;
   "google" )
     uri="https://www.google.com"
     ;;
