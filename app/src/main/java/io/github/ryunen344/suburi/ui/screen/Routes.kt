@@ -57,7 +57,7 @@ inline val <reified T : Routes>  KClass<T>.typeMap: Map<KType, @JvmSuppressWildc
         else -> error("unexpected type parameter")
     }
 
-val <T : Routes>  KClass<T>.deepLinks: List<NavDeepLink>
+val <T : Routes> KClass<T>.deepLinks: List<NavDeepLink>
     get() = when (this) {
         Routes.Top::class -> emptyList()
         Routes.Uuid::class -> listOf(
