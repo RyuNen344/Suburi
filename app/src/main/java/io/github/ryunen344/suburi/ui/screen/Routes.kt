@@ -1,6 +1,5 @@
 package io.github.ryunen344.suburi.ui.screen
 
-import android.net.Uri
 import android.os.Bundle
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -8,7 +7,6 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.SizeTransform
 import androidx.compose.runtime.Composable
-import androidx.core.os.BundleCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDeepLink
@@ -20,6 +18,7 @@ import androidx.navigation.get
 import androidx.navigation.internalToRoute
 import androidx.navigation.navDeepLink
 import androidx.navigation.serialization.decodeArguments
+import io.github.ryunen344.suburi.navigation.SerializableNavTypeMap
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -29,13 +28,20 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.serializer
 import timber.log.Timber
-import java.io.ByteArrayOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
 import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
-import kotlin.reflect.typeOf
+
+val onWrappedUuidParse: ((String) -> WrappedUuid?) = { value ->
+    runCatching {
+        UUID.fromString(value)
+            .let(::WrappedUuid)
+            .also { Timber.d("from Deeplink $it") }
+    }.getOrElse {
+        Timber.d("from Navigation")
+        null
+    }
+}
 
 @Serializable
 sealed class Routes {
@@ -52,8 +58,8 @@ sealed class Routes {
 inline val <reified T : Routes> KClass<T>.typeMap: Map<KType, @JvmSuppressWildcards NavType<*>>
     get() = when (this) {
         Routes.Top::class -> emptyMap()
-        Routes.Uuid::class -> WrappedUuid.typeMap
-        Routes.Structures::class -> Structure.typeMap
+        Routes.Uuid::class -> SerializableNavTypeMap<WrappedUuid>(onParseValue = onWrappedUuidParse)
+        Routes.Structures::class -> SerializableNavTypeMap<Structure>()
         else -> error("unexpected type parameter")
     }
 
@@ -61,7 +67,10 @@ val <T : Routes> KClass<T>.deepLinks: List<NavDeepLink>
     get() = when (this) {
         Routes.Top::class -> emptyList()
         Routes.Uuid::class -> listOf(
-            navDeepLink<Routes.Uuid>(basePath = "https://www.example.com/uuid", typeMap = WrappedUuid.typeMap),
+            navDeepLink<Routes.Uuid>(
+                basePath = "https://www.example.com/uuid",
+                typeMap = SerializableNavTypeMap<WrappedUuid>(onParseValue = onWrappedUuidParse),
+            ),
         )
 
         Routes.Structures::class -> emptyList()
@@ -69,78 +78,11 @@ val <T : Routes> KClass<T>.deepLinks: List<NavDeepLink>
     }
 
 @Serializable
-data class WrappedUuid(@Serializable(with = UUIDSerializer::class) val value: UUID) : java.io.Serializable {
-    companion object {
-        val navType = object : NavType<WrappedUuid>(false) {
-            override fun get(bundle: Bundle, key: String): WrappedUuid? {
-                return BundleCompat.getSerializable(bundle, key, WrappedUuid::class.java)
-            }
-
-            override fun parseValue(value: String): WrappedUuid {
-                Timber.d("parseValue $value")
-                return runCatching {
-                    UUID.fromString(value)
-                        .let(::WrappedUuid)
-                        .also { Timber.d("from Deeplink $it") }
-                }.getOrElse {
-                    Timber.d("from Navigation")
-                    Uri.decode(value)
-                        .hexToByteArray()
-                        .inputStream()
-                        .use(::ObjectInputStream)
-                        .use(ObjectInputStream::readObject) as WrappedUuid
-                }
-            }
-
-            override fun put(bundle: Bundle, key: String, value: WrappedUuid) {
-                bundle.putSerializable(key, value)
-            }
-
-            override fun serializeAsValue(value: WrappedUuid): String {
-                Timber.d("serializeAsValue $value")
-                val hex = ByteArrayOutputStream().apply {
-                    use(::ObjectOutputStream).use { it.writeObject(value) }
-                }.toByteArray().toHexString()
-                return Uri.encode(hex)
-            }
-        }
-
-        val typeMap = mapOf(typeOf<WrappedUuid>() to navType)
-    }
-}
+data class WrappedUuid(@Serializable(with = UUIDSerializer::class) val value: UUID) : java.io.Serializable
 
 @Serializable
 data class Structure(val value1: String, val value2: Long, val value3: String) : java.io.Serializable {
     companion object {
-        val navType = object : NavType<Structure>(false) {
-            override fun get(bundle: Bundle, key: String): Structure? {
-                return BundleCompat.getSerializable(bundle, key, Structure::class.java)
-            }
-
-            override fun parseValue(value: String): Structure {
-                Timber.d("parseValue $value")
-                return Uri.decode(value)
-                    .hexToByteArray()
-                    .inputStream()
-                    .use(::ObjectInputStream)
-                    .use(ObjectInputStream::readObject) as Structure
-            }
-
-            override fun put(bundle: Bundle, key: String, value: Structure) {
-                bundle.putSerializable(key, value)
-            }
-
-            override fun serializeAsValue(value: Structure): String {
-                Timber.d("serializeAsValue $value")
-                val hex = ByteArrayOutputStream().apply {
-                    use(::ObjectOutputStream).use { it.writeObject(value) }
-                }.toByteArray().toHexString()
-                return Uri.encode(hex)
-            }
-        }
-
-        val typeMap = mapOf(typeOf<Structure>() to navType)
-
         fun random(): Structure {
             return Structure(
                 value1 = UUID.randomUUID().toString(),
