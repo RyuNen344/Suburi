@@ -1,6 +1,3 @@
-@file:UseContextualSerialization(UUID::class)
-@file:UseSerializers(UUIDSerializer::class)
-
 package io.github.ryunen344.suburi.ui.screen
 
 import android.os.Bundle
@@ -24,8 +21,6 @@ import androidx.navigation.serialization.decodeArguments
 import io.github.ryunen344.suburi.navigation.SerializableNavTypeMap
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UseContextualSerialization
-import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
