@@ -29,8 +29,7 @@ class SerializableNavType<T : java.io.Serializable>(
     private val onParseValue: ((String) -> T?)? = null,
 ) : NavType<T>(false) {
 
-    override val name: String
-        get() = clazz.name
+    override val name: String = clazz.name
 
     override fun put(bundle: Bundle, key: String, value: T) {
         bundle.putSerializable(key, value)
@@ -58,6 +57,7 @@ class SerializableNavType<T : java.io.Serializable>(
 
         if (clazz != other.clazz) return false
         if (onParseValue != other.onParseValue) return false
+        if (name != other.name) return false
 
         return true
     }
@@ -65,6 +65,7 @@ class SerializableNavType<T : java.io.Serializable>(
     override fun hashCode(): Int {
         var result = clazz.hashCode()
         result = 31 * result + (onParseValue?.hashCode() ?: 0)
+        result = 31 * result + name.hashCode()
         return result
     }
 }
@@ -88,8 +89,7 @@ class NullableSerializableNavType<T : java.io.Serializable>(
     private val onParseValue: ((String) -> T?)? = null,
 ) : NavType<T?>(true) {
 
-    override val name: String
-        get() = clazz.name
+    override val name: String = clazz.name
 
     override fun put(bundle: Bundle, key: String, value: T?) {
         bundle.putSerializable(key, value)
@@ -100,6 +100,7 @@ class NullableSerializableNavType<T : java.io.Serializable>(
     }
 
     override fun parseValue(value: String): T? {
+        Timber.d("parseValue $value")
         return if (value == "null") null else onParseValue?.invoke(value) ?: Base64.getUrlDecoder().decode(value).deserialize()
     }
 
@@ -120,6 +121,7 @@ class NullableSerializableNavType<T : java.io.Serializable>(
 
         if (clazz != other.clazz) return false
         if (onParseValue != other.onParseValue) return false
+        if (name != other.name) return false
 
         return true
     }
@@ -127,6 +129,7 @@ class NullableSerializableNavType<T : java.io.Serializable>(
     override fun hashCode(): Int {
         var result = clazz.hashCode()
         result = 31 * result + (onParseValue?.hashCode() ?: 0)
+        result = 31 * result + name.hashCode()
         return result
     }
 }
