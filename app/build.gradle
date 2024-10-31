@@ -99,8 +99,9 @@ android {
         unitTests.includeAndroidResources = true
         unitTests.returnDefaultValues = true
         unitTests.all { test ->
-            test.systemProperty("robolectric.logging.enabled", "true")
             test.systemProperty("robolectric.logging", "stdout")
+            test.systemProperty("robolectric.logging.enabled", "true")
+            test.systemProperty("robolectric.graphicsMode", "NATIVE")
             test.testLogging.showStandardStreams = true
         }
     }
