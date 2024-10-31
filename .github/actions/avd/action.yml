@@ -2,6 +2,10 @@
 name: "setup KVM"
 description: "setup KVM group for Android Emulator"
 inputs:
+  api-level:
+    description: 'API level of the platform and system image - e.g. 23 for Android Marshmallow, 29 for Android 10'
+    required: false
+    default: "35"
   prepare-script:
     description: "custom script to run before the main script - e.g. `./gradlew assembleDebugAndroidTest`"
     required: false
@@ -51,13 +55,13 @@ runs:
         path: |
           ~/.android/avd/*
           ~/.android/adb*
-        key: 'avd-${{ runner.os }}-${{ steps.cache-key.outputs.key }}'
+        key: 'avd-${{ runner.os }}-${{ inputs.api-level }}-${{ steps.cache-key.outputs.key }}'
 
     - name: create AVD and generate snapshot for caching
       if: steps.avd-cache.outputs.cache-hit != 'true'
       uses: reactivecircus/android-emulator-runner@v2
       with:
-        api-level: 34
+        api-level: ${{ inputs.api-level }}
         arch: x86_64
         force-avd-creation: false
         emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
@@ -73,7 +77,7 @@ runs:
     - name: run script
       uses: reactivecircus/android-emulator-runner@v2
       with:
-        api-level: 34
+        api-level: ${{ inputs.api-level }}
         arch: x86_64
         force-avd-creation: false
         emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
