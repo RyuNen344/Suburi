@@ -11,7 +11,10 @@ arg=$1
 uri=""
 case "$arg" in
   "example" )
-    uri="https://www.example.com/uuid/47277417-a40f-43ac-9d27-009835c3e3a4"
+    uri="https://www.example.com/uuid/47277417-a40f-43ac-9d27-009835c3e3a4?uuid2=17277417-a40f-43ac-9d27-009835c3e3a4"
+    ;;
+  "struct" )
+    uri="https://www.example.com/struct/hogehogheo"
     ;;
   "google" )
     uri="https://www.google.com"

@@ -72,10 +72,20 @@ val <T : Routes> KClass<T>.deepLinks: List<NavDeepLink>
             navDeepLink<Routes.Uuid>(
                 basePath = "https://www.example.com/uuid",
                 typeMap = ParcelableNavTypeMap<WrappedUuid>(onParseValue = onWrappedUuidParse),
-            ),
+            ).also {
+                Timber.wtf("uriPattern ${it.uriPattern}")
+            },
         )
 
-        Routes.Structures::class -> emptyList()
+        Routes.Structures::class -> listOf(
+            navDeepLink<Routes.Structures>(
+                basePath = "https://www.example.com/struct",
+                typeMap = ParcelableNavTypeMap<Structure>(),
+            ).also {
+                Timber.wtf("uriPattern ${it.uriPattern}")
+            },
+        )
+
         else -> error("unexpected type parameter")
     }
 
