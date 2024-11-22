@@ -17,9 +17,9 @@ apply from: rootProject.layout.projectDirectory.file("gradle/jacoco.gradle")
 def defaultExcludes = []
 def additionalExcludes = [
     "/META-INF/{AL2.0,LGPL2.1}",
-    "/META-INF/NOTICE*",
+    "**/NOTICE*",
     "/META-INF/licenses/ASM",
-    "/META-INF/LICENSE*",
+    "**/LICENSE*",
     "/LICENSE-junit.txt",
     "/junit/**"
 ]
@@ -32,13 +32,13 @@ def additionalPickFirsts = [
 
 android {
     namespace 'io.github.ryunen344.suburi'
-    compileSdk 34
+    compileSdk 35
     buildToolsVersion = '35.0.0'
 
     defaultConfig {
         applicationId "io.github.ryunen344.suburi"
         minSdk 21
-        targetSdk 34
+        targetSdk 35
         versionCode 1
         versionName "1.0.0"
 
@@ -56,9 +56,11 @@ android {
     signingConfigs {
         debug {
             storeFile = rootProject.layout.projectDirectory.file("keystore/debug.keystore").asFile
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
+            storePassword = DEFAULT_PASSWORD
+            keyAlias = DEFAULT_ALIAS
+            keyPassword = DEFAULT_PASSWORD
+            enableV3Signing true
+            enableV4Signing true
         }
     }
     buildTypes {
@@ -99,8 +101,9 @@ android {
         unitTests.includeAndroidResources = true
         unitTests.returnDefaultValues = true
         unitTests.all { test ->
-            test.systemProperty("robolectric.logging.enabled", "true")
             test.systemProperty("robolectric.logging", "stdout")
+            test.systemProperty("robolectric.logging.enabled", "true")
+            test.systemProperty("robolectric.graphicsMode", "NATIVE")
             test.testLogging.showStandardStreams = true
         }
     }
