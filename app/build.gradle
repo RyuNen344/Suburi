@@ -191,8 +191,13 @@ composeCompiler {
     stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
 }
 
+configurations.configureEach {
+    // remove redundant ktor dependents
+    exclude([group: "org.slf4j"])
+    exclude([group: "org.jetbrains.kotlinx", module: "kotlinx-coroutines-slf4j"])
+}
+
 dependencies {
-    coreLibraryDesugaring libs.desugar.jdk.libs
     implementation libs.androidx.activity.compose
     implementation libs.androidx.appcompat
     implementation libs.androidx.collection
@@ -222,6 +227,16 @@ dependencies {
     implementation libs.com.google.dagger.hilt.android
     ksp libs.androidx.hilt.compiler
     ksp libs.com.google.dagger.hilt.compiler
+    implementation libs.com.squareup.okhttp
+    implementation libs.com.squareup.okhttp.logging
+    implementation libs.com.squareup.okio
+    coreLibraryDesugaring libs.desugar.jdk.libs
+    implementation libs.io.ktor.client.call.id
+    implementation libs.io.ktor.client.content.negotiation
+    implementation libs.io.ktor.client.core
+    implementation libs.io.ktor.client.okhttp
+    implementation libs.io.ktor.client.resources
+    implementation libs.io.ktor.serialization.kotlinx.json
     implementation libs.org.jetbrains.kotlinx.atomicfu
     implementation libs.org.jetbrains.kotlinx.coroutine.android
     implementation libs.org.jetbrains.kotlinx.serialization.core
@@ -235,10 +250,12 @@ dependencies {
     testImplementation libs.androidx.test.runner
     testImplementation libs.androidx.test.ext.junit
     testImplementation libs.androidx.test.ext.truth
+    testImplementation libs.app.cash.turbine
     testImplementation libs.com.google.dagger.hilt.android.test
+    testImplementation libs.com.squareup.okhttp.mockwebserver
     testImplementation libs.io.mockk
     testImplementation libs.io.mockk.agent
-    testImplementation libs.app.cash.turbine
+    testImplementation libs.io.ktor.client.mock
     testImplementation libs.org.jetbrains.kotlin.test
     testImplementation libs.org.jetbrains.kotlinx.coroutine.debug
     testImplementation libs.org.jetbrains.kotlinx.coroutine.test
@@ -252,10 +269,12 @@ dependencies {
     androidTestImplementation libs.androidx.test.runner
     androidTestImplementation libs.androidx.test.ext.junit
     androidTestImplementation libs.androidx.test.ext.truth
+    androidTestImplementation libs.app.cash.turbine
     androidTestImplementation libs.com.google.dagger.hilt.android.test
+    androidTestImplementation libs.com.squareup.okhttp.mockwebserver
     androidTestImplementation libs.io.mockk
     androidTestImplementation libs.io.mockk.android
-    androidTestImplementation libs.app.cash.turbine
+    androidTestImplementation libs.io.ktor.client.mock
     androidTestImplementation libs.org.jetbrains.kotlin.test
     androidTestImplementation libs.org.jetbrains.kotlinx.coroutine.debug
     androidTestImplementation libs.org.jetbrains.kotlinx.coroutine.test

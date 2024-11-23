@@ -38,7 +38,10 @@ jacoco = "0.8.12"
 jdk = "11"
 junit = "4.13.2"
 kotlin = "2.0.21"
+ktor = "3.0.1"
 mockk = "1.13.13"
+okhttp = "4.12.0"
+okio = "3.9.1"
 robolectric = "4.14.1"
 serialization = "1.7.3"
 timber = "5.0.1"
@@ -87,8 +90,19 @@ com-google-dagger-hilt-android = { module = "com.google.dagger:hilt-android", ve
 com-google-dagger-hilt-android-test = { module = "com.google.dagger:hilt-android-testing", version.ref = "com-google-dagger" }
 com-google-dagger-hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "com-google-dagger" }
 com-google-truth-truth = { module = "com.google.truth:truth", version.ref = "com-google-truth" }
+com-squareup-okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+com-squareup-okhttp-logging = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp" }
+com-squareup-okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp" }
+com-squareup-okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 io-gitlab-arturbosch-detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
+io-ktor-client-call-id = { module = "io.ktor:ktor-client-call-id", version.ref = "ktor" }
+io-ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+io-ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+io-ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+io-ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+io-ktor-client-resources = { module = "io.ktor:ktor-client-resources", version.ref = "ktor" }
+io-ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 io-mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 io-mockk-agent = { module = "io.mockk:mockk-agent-jvm", version.ref = "mockk" }
 io-mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockk" }
