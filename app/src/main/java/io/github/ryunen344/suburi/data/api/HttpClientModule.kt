@@ -16,8 +16,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class HttpClientModule {
-
+internal class HttpClientModule {
     @Provides
     @Singleton
     fun provideHttpClient(

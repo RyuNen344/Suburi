@@ -191,12 +191,6 @@ composeCompiler {
     stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
 }
 
-configurations.configureEach {
-    // remove redundant ktor dependents
-    exclude([group: "org.slf4j"])
-    exclude([group: "org.jetbrains.kotlinx", module: "kotlinx-coroutines-slf4j"])
-}
-
 dependencies {
     implementation libs.androidx.activity.compose
     implementation libs.androidx.appcompat

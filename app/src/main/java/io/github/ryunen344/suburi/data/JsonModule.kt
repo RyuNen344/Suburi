@@ -9,8 +9,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class JsonModule {
-
+internal class JsonModule {
     @Provides
     @Singleton
     fun provideJson(): Json {

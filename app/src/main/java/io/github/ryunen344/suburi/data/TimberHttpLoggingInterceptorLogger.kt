@@ -4,7 +4,7 @@ import android.util.Log
 import okhttp3.logging.HttpLoggingInterceptor
 import timber.log.Timber
 
-class TimberHttpLoggingInterceptorLogger(
+internal class TimberHttpLoggingInterceptorLogger(
     val tag: String = "OkHttp",
     val priority: Int = Log.DEBUG,
 ) : HttpLoggingInterceptor.Logger {

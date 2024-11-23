@@ -25,7 +25,7 @@ class StrictModeInitializer : Initializer<Unit> {
                             }
                             detectAll()
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                                penaltyListener(ContextCompat.getMainExecutor(context), Timber::e)
+                                penaltyListener(ContextCompat.getMainExecutor(context), Timber::w)
                             } else {
                                 penaltyLog()
                             }
@@ -44,7 +44,7 @@ class StrictModeInitializer : Initializer<Unit> {
                         .apply {
                             detectAll()
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                                penaltyListener(ContextCompat.getMainExecutor(context), Timber::e)
+                                penaltyListener(ContextCompat.getMainExecutor(context), Timber::w)
                             } else {
                                 penaltyLog()
                             }

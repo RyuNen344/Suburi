@@ -11,14 +11,19 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class OkHttpModule {
+internal class OkHttpModule {
 
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
         val timeout = Duration.ofMillis(TIMEOUT_MILLS)
         return OkHttpClient.Builder()
-            .addInterceptor(HttpLoggingInterceptor(TimberHttpLoggingInterceptorLogger()))
+            .addInterceptor(
+                HttpLoggingInterceptor(TimberHttpLoggingInterceptorLogger()).apply {
+                    level = HttpLoggingInterceptor.Level.BODY
+                },
+            )
+            .addInterceptor(TrafficStatsNetworkInterceptor())
             .connectTimeout(timeout)
             .readTimeout(timeout)
             .writeTimeout(timeout)
