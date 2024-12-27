@@ -109,6 +109,7 @@ io-mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockk" }
 io-nlopez-compose-rules-detekt = { module = "io.nlopez.compose.rules:detekt", version.ref = "detekt-compose-rules" }
 junit = { module = "junit:junit", version.ref = "junit" }
 org-jetbrains-kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+org-jetbrains-kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 org-jetbrains-kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
 org-jetbrains-kotlinx-coroutine-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 org-jetbrains-kotlinx-coroutine-debug = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-debug", version.ref = "coroutines" }

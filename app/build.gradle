@@ -19,13 +19,17 @@ def additionalExcludes = [
     "/META-INF/{AL2.0,LGPL2.1}",
     "**/NOTICE*",
     "/META-INF/licenses/ASM",
+    "/META-INF/versions/**",
     "**/LICENSE*",
     "/LICENSE-junit.txt",
-    "/junit/**"
+    "/junit/**",
+    "DebugProbesKt.bin",
 ]
 
 def defaultPickFirsts = []
 def additionalPickFirsts = [
+    // https://github.com/Kotlin/kotlinx.coroutines/issues/2023
+    // until coroutines 1.10.0 or newer
     "win32-x86-64/attach_hotspot_windows.dll",
     "win32-x86/attach_hotspot_windows.dll"
 ]
@@ -170,13 +174,12 @@ androidComponents {
         builder.deviceTests[DeviceTestBuilder.ANDROID_TEST_TYPE].enableCodeCoverage = debug
     }
     onVariants(selector()) { variant ->
-        def release = variant.buildType == 'release'
         // resource
-        def excludes = release ? defaultExcludes + additionalExcludes + ["DebugProbesKt.bin", "**/attach_hotspot_windows.dll"] : defaultExcludes + additionalExcludes
+        def excludes = defaultExcludes + additionalExcludes
         def pickFirsts = defaultPickFirsts + additionalPickFirsts
 
         // default apk
-        packaging.resources.excludes.addAll(excludes)
+        variant.packaging.resources.excludes.addAll(excludes)
         variant.packaging.resources.pickFirsts.addAll(pickFirsts)
 
         // androidTest apk
@@ -251,6 +254,7 @@ dependencies {
     testImplementation libs.io.mockk.agent
     testImplementation libs.io.ktor.client.mock
     testImplementation libs.org.jetbrains.kotlin.test
+    testImplementation libs.org.jetbrains.kotlin.reflect
     testImplementation libs.org.jetbrains.kotlinx.coroutine.debug
     testImplementation libs.org.jetbrains.kotlinx.coroutine.test
     testImplementation libs.org.robolectric.robolectric
@@ -270,7 +274,7 @@ dependencies {
     androidTestImplementation libs.io.mockk.android
     androidTestImplementation libs.io.ktor.client.mock
     androidTestImplementation libs.org.jetbrains.kotlin.test
-    androidTestImplementation libs.org.jetbrains.kotlinx.coroutine.debug
+    androidTestImplementation libs.org.jetbrains.kotlin.reflect
     androidTestImplementation libs.org.jetbrains.kotlinx.coroutine.test
 
     androidTestImplementation libs.androidx.test.espresso.core

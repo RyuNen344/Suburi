@@ -56,14 +56,18 @@ jacoco {
 android {
     testOptions {
         unitTests.all { test ->
-            // workaround for jacoco with robolectric
             jacoco {
+                // workaround for jacoco with robolectric
                 includeNoLocationClasses = true
                 excludes = [
+                    'jdk.internal.*',
+
+                    // https://github.com/jacoco/jacoco/issues/1357
                     'kotlin.coroutines.jvm.internal.DebugProbesKt',
                     'kotlinx.coroutines.debug.internal.DebugProbesKt',
+                    'kotlinx.coroutines.debug.NoOpProbesKt',
+                    // until coroutines 1.10.0 or newer
                     'kotlinx.coroutines.debug.internal.NoOpProbesKt',
-                    'jdk.internal.*'
                 ]
             }
         }
