@@ -66,8 +66,6 @@ android {
                     'kotlin.coroutines.jvm.internal.DebugProbesKt',
                     'kotlinx.coroutines.debug.internal.DebugProbesKt',
                     'kotlinx.coroutines.debug.NoOpProbesKt',
-                    // until coroutines 1.10.0 or newer
-                    'kotlinx.coroutines.debug.internal.NoOpProbesKt',
                 ]
             }
         }

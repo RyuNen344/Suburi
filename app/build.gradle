@@ -26,14 +26,6 @@ def additionalExcludes = [
     "DebugProbesKt.bin",
 ]
 
-def defaultPickFirsts = []
-def additionalPickFirsts = [
-    // https://github.com/Kotlin/kotlinx.coroutines/issues/2023
-    // until coroutines 1.10.0 or newer
-    "win32-x86-64/attach_hotspot_windows.dll",
-    "win32-x86/attach_hotspot_windows.dll"
-]
-
 android {
     namespace 'io.github.ryunen344.suburi'
     compileSdk 35
@@ -81,7 +73,6 @@ android {
     }
 
     defaultExcludes += packaging.resources.excludes
-    defaultPickFirsts += packaging.resources.pickFirsts
 
     lint {
         lintConfig rootProject.layout.projectDirectory.file(".lint/lint.xml").asFile
@@ -176,15 +167,12 @@ androidComponents {
     onVariants(selector()) { variant ->
         // resource
         def excludes = defaultExcludes + additionalExcludes
-        def pickFirsts = defaultPickFirsts + additionalPickFirsts
 
         // default apk
         variant.packaging.resources.excludes.addAll(excludes)
-        variant.packaging.resources.pickFirsts.addAll(pickFirsts)
 
         // androidTest apk
         variant.androidTest?.packaging?.resources?.excludes?.addAll(excludes)
-        variant.androidTest?.packaging?.resources?.pickFirsts?.addAll(pickFirsts)
     }
 }
 
