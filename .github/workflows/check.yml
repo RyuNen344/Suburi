@@ -62,7 +62,7 @@ jobs:
         shell: bash
         run: |
           ./gradlew testDebugUnitTest
-      - uses: dorny/test-reporter@v1
+      - uses: dorny/test-reporter@v2
         if: ${{ !cancelled() }}
         with:
           name: unit-test-result
@@ -92,7 +92,7 @@ jobs:
         with:
           prepare-script: ./gradlew assembleDebug assembleDebugAndroidTest
           script: ./gradlew connectedDebugAndroidTest
-      - uses: dorny/test-reporter@v1
+      - uses: dorny/test-reporter@v2
         if: ${{ !cancelled() }}
         with:
           name: android-test-result
