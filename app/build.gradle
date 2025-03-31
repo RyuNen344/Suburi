@@ -227,6 +227,10 @@ dependencies {
     implementation libs.org.jetbrains.kotlinx.serialization.core
     implementation libs.timber
 
+    implementation "io.github.ryunen344.mutton:auto-mutton-recipe:1.1.0"
+    implementation "io.github.ryunen344.mutton:auto-mutton-recipe-compose:1.1.0"
+    implementation "io.github.ryunen344.mutton:auto-mutton-recipe-savedstate:1.1.0"
+
     // test
     testImplementation libs.junit
     testImplementation libs.com.google.truth.truth

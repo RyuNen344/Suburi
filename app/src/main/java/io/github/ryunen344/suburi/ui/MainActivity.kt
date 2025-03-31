@@ -69,6 +69,7 @@ class MainActivity : AppCompatActivity() {
                 ) {
                     routes<Routes.Top> {
                         TopScreen(
+                            it.savedStateHandle,
                             onClickUuid = {
                                 navController.navigate(Routes.Uuid(WrappedUuid(UUID.randomUUID())))
                             },
@@ -84,36 +85,6 @@ class MainActivity : AppCompatActivity() {
                         StructureScreen(structure = it.toRoutes<Routes.Structures>().structure)
                     }
                 }
-            }
-        }
-        lifecycleScope.launch {
-            delay(timeMillis = 5000)
-            runCatching {
-                withContext(Dispatchers.IO) {
-                    val request = Request.Builder()
-                        .url("https://www.google.com")
-                        .build()
-                    okHttpClient.newCall(request).executeAsync()
-                }
-            }.onSuccess { response ->
-                Timber.wtf("okhttp response $response")
-            }.onFailure {
-                Timber.e(it)
-            }
-        }
-
-        lifecycleScope.launch {
-            delay(timeMillis = 5500)
-            runCatching {
-                withContext(Dispatchers.IO) {
-                    httpClient.get {
-                        url("https://www.google.com")
-                    }
-                }
-            }.onSuccess { response ->
-                Timber.wtf("ktor response $response")
-            }.onFailure {
-                Timber.e(it)
             }
         }
     }
