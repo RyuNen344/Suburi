@@ -1,5 +1,6 @@
 import com.android.build.api.variant.DeviceTestBuilder
 import com.android.build.api.variant.HostTestBuilder
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias libs.plugins.com.android.application
@@ -107,9 +108,12 @@ android {
         sourceCompatibility libs.versions.jdk.get()
         targetCompatibility libs.versions.jdk.get()
     }
-    kotlinOptions {
-        jvmTarget = libs.versions.jdk.get()
-        options.optIn = [
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.fromTarget(libs.versions.jdk.get())
+        optIn = [
             // compose animation
             'androidx.compose.animation.core.ExperimentalAnimatableApi',
             'androidx.compose.animation.core.ExperimentalAnimationSpecApi',
@@ -179,7 +183,9 @@ androidComponents {
 composeCompiler {
     metricsDestination = layout.buildDirectory.dir("compose_compiler")
     reportsDestination = layout.buildDirectory.dir("compose_compiler")
-    stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
+    stabilityConfigurationFiles = [
+        rootProject.layout.projectDirectory.file("stability_config.conf")
+    ]
 }
 
 dependencies {
