@@ -5,8 +5,9 @@ import org.slf4j.Logger
 import org.slf4j.Marker
 import org.slf4j.helpers.MessageFormatter
 import timber.log.Timber
+import java.io.Serializable
 
-class TimberSLF4JLogger(val tag: String) : Logger {
+class TimberSLF4JLogger(val tag: String) : Logger, Serializable {
 
     override fun getName(): String {
         return tag
@@ -259,5 +260,9 @@ class TimberSLF4JLogger(val tag: String) : Logger {
     private fun logInternal(priority: Int, format: String?, vararg arguments: Any?) {
         val ft = MessageFormatter.arrayFormat(format, arguments)
         Timber.tag(tag).log(priority, ft.throwable, ft.message)
+    }
+
+    companion object {
+        private const val serialVersionUID = 4543543179680149735L
     }
 }
