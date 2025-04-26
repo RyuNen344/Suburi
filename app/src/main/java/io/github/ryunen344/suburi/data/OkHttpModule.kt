@@ -18,12 +18,12 @@ internal class OkHttpModule {
     fun provideOkHttpClient(): OkHttpClient {
         val timeout = Duration.ofMillis(TIMEOUT_MILLS)
         return OkHttpClient.Builder()
-            .addInterceptor(
+            .addNetworkInterceptor(
                 HttpLoggingInterceptor(TimberHttpLoggingInterceptorLogger()).apply {
                     level = HttpLoggingInterceptor.Level.BODY
                 },
             )
-            .addInterceptor(TrafficStatsNetworkInterceptor())
+            .addNetworkInterceptor(TrafficStatsNetworkInterceptor())
             .connectTimeout(timeout)
             .readTimeout(timeout)
             .writeTimeout(timeout)
