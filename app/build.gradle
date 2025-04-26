@@ -30,7 +30,7 @@ def additionalExcludes = [
 android {
     namespace 'io.github.ryunen344.suburi'
     compileSdk 35
-    buildToolsVersion = '35.0.0'
+    buildToolsVersion '35.0.0'
 
     defaultConfig {
         applicationId "io.github.ryunen344.suburi"
