@@ -8,7 +8,6 @@ import io.github.ryunen344.suburi.BuildConfig
 import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.runBlocking
 import timber.log.Timber
-import java.util.concurrent.Executors
 import kotlin.reflect.typeOf
 
 class ThreadPolicyInitializer : Initializer<Unit> {
@@ -19,14 +18,15 @@ class ThreadPolicyInitializer : Initializer<Unit> {
                 StrictMode.setThreadPolicy(
                     StrictMode.ThreadPolicy.Builder()
                         .apply {
-                            runBlocking(newFixedThreadPoolContext(1, "ThreadPolicyInitializer")) {
+                            val dispatcher = newFixedThreadPoolContext(1, "ThreadPolicyInitializer")
+                            runBlocking(dispatcher) {
                                 typeOf<ThreadPolicyInitializer>()
-                            }
-                            detectAll()
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                                penaltyListener(Executors.newSingleThreadExecutor(), Timber::w)
-                            } else {
-                                penaltyLog()
+                                detectAll()
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                                    penaltyListener(dispatcher.executor, Timber::w)
+                                } else {
+                                    penaltyLog()
+                                }
                             }
                         }
                         .build(),
