@@ -133,7 +133,7 @@ jobs:
         shell: bash
         run: |
           ./gradlew jacocoReport
-      - uses: madrapps/jacoco-report@v1.7.2-beta
+      - uses: madrapps/jacoco-report@v1.7.2
         with:
           paths: |
             ${{ github.workspace }}/app/build/reports/jacoco/jacocoReport/jacocoReport.xml
