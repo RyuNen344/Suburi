@@ -30,27 +30,24 @@ class ChunkedDebugTree : Timber.DebugTree() {
                     if (buffer.exhausted()) break
                 }
 
-                val bytesToRead = when (val newline = buffer.indexOf(NEW_LINE_BYTE)) {
+                val segment = Buffer()
+                var bytesToRead = when (val newline = buffer.indexOf(NEW_LINE_BYTE)) {
                     -1L -> buffer.size.coerceAtMost(chunkSize)
                     else -> newline.coerceAtMost(chunkSize)
                 }
-
-                val segment = Buffer()
                 buffer.peek().read(segment, bytesToRead)
-
-                var readCount = bytesToRead
                 var valid = false
                 do {
-                    val bytes = segment.peek().readByteArray(readCount)
+                    val bytes = segment.peek().readByteArray(bytesToRead)
                     valid = bytes.decodeToString().lastOrNull() != REPLACEMENT_CHARACTER
                     if (valid) {
                         yield(bytes)
                     } else {
-                        readCount--
+                        bytesToRead--
                     }
-                } while (!valid && readCount > 0L)
+                } while (!valid && bytesToRead > 0L)
 
-                buffer.readByteArray(readCount)
+                buffer.readByteArray(bytesToRead)
             }
         }
     }
