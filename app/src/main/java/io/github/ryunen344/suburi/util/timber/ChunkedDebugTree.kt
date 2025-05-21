@@ -1,6 +1,5 @@
 package io.github.ryunen344.suburi.util.timber
 
-import okio.Buffer
 import timber.log.Timber
 
 /**
@@ -13,43 +12,38 @@ class ChunkedDebugTree : Timber.DebugTree() {
         if (bytes.size < MAX_LOG_BYTES) {
             super.log(priority, tag, message, t)
         } else {
-            bytes.chunk().forEach {
-                super.log(priority, tag, it.decodeToString(), t)
+            for (chunk in bytes.chunked()) {
+                super.log(priority, tag, chunk, t)
             }
         }
     }
 
-    private fun ByteArray.chunk(chunkSize: Long = MAX_LOG_BYTES.toLong()): Sequence<ByteArray> {
-        val buffer = Buffer().write(this)
-        return sequence {
-            while (!buffer.exhausted()) {
-                // consume new line of the start of the byte
-                if (buffer.indexOf(NEW_LINE_BYTE) == 0L) {
-                    buffer.skip(1L)
-                    // ignore new line of the end of the byte
-                    if (buffer.exhausted()) break
+    private fun ByteArray.chunked(chunkSize: Int = MAX_LOG_BYTES): Sequence<String> = sequence {
+        var offset = 0
+        while (offset < size) {
+            var end = (offset + chunkSize).coerceAtMost(size)
+            val newline = indexOf(NEW_LINE_BYTE, offset, end)
+            if (newline != -1) {
+                end = newline + 1
+            } else {
+                while (end > offset && decodeToString(offset, end).lastOrNull() == REPLACEMENT_CHARACTER) {
+                    end--
                 }
-
-                val segment = Buffer()
-                var bytesToRead = when (val newline = buffer.indexOf(NEW_LINE_BYTE)) {
-                    -1L -> buffer.size.coerceAtMost(chunkSize)
-                    else -> newline.coerceAtMost(chunkSize)
-                }
-                buffer.peek().read(segment, bytesToRead)
-                var valid = false
-                do {
-                    val bytes = segment.peek().readByteArray(bytesToRead)
-                    valid = bytes.decodeToString().lastOrNull() != REPLACEMENT_CHARACTER
-                    if (valid) {
-                        yield(bytes)
-                    } else {
-                        bytesToRead--
-                    }
-                } while (!valid && bytesToRead > 0L)
-
-                buffer.readByteArray(bytesToRead)
             }
+            yield(decodeToString(offset, end))
+            offset = end
         }
+    }
+
+    private fun ByteArray.indexOf(
+        byte: Byte,
+        startIndex: Int = 0,
+        endIndex: Int = size,
+    ): Int {
+        for (i in startIndex until endIndex) {
+            if (this[i] == byte) return i
+        }
+        return -1
     }
 
     private companion object {
