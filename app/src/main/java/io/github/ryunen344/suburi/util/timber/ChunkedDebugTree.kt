@@ -23,7 +23,7 @@ class ChunkedDebugTree : Timber.DebugTree() {
         val buffer = Buffer().write(this)
         return sequence {
             while (!buffer.exhausted()) {
-                // ignore new line of the first byte
+                // consume new line of the start of the byte
                 if (buffer.indexOf(NEW_LINE_BYTE) == 0L) {
                     buffer.skip(1L)
                     // ignore new line of the end of the byte
