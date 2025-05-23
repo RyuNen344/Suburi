@@ -51,6 +51,9 @@ sealed class Routes {
     data object Top : Routes()
 
     @Serializable
+    data object Cube : Routes()
+
+    @Serializable
     data class Uuid(val uuid: WrappedUuid) : Routes()
 
     @Serializable
@@ -60,6 +63,7 @@ sealed class Routes {
 inline val <reified T : Routes> KClass<T>.typeMap: Map<KType, @JvmSuppressWildcards NavType<*>>
     get() = when (this) {
         Routes.Top::class -> emptyMap()
+        Routes.Cube::class -> emptyMap()
         Routes.Uuid::class -> ParcelableNavTypeMap<WrappedUuid>(onParseValue = onWrappedUuidParse)
         Routes.Structures::class -> ParcelableNavTypeMap<Structure>()
         else -> error("unexpected type parameter")
@@ -68,6 +72,7 @@ inline val <reified T : Routes> KClass<T>.typeMap: Map<KType, @JvmSuppressWildca
 val <T : Routes> KClass<T>.deepLinks: List<NavDeepLink>
     get() = when (this) {
         Routes.Top::class -> emptyList()
+        Routes.Cube::class -> emptyList()
         Routes.Uuid::class -> listOf(
             navDeepLink<Routes.Uuid>(
                 basePath = "https://www.example.com/uuid",

@@ -19,6 +19,7 @@ import io.github.ryunen344.suburi.data.executeAsync
 import io.github.ryunen344.suburi.ui.screen.Routes
 import io.github.ryunen344.suburi.ui.screen.Structure
 import io.github.ryunen344.suburi.ui.screen.WrappedUuid
+import io.github.ryunen344.suburi.ui.screen.cube.CubeScreen
 import io.github.ryunen344.suburi.ui.screen.routes
 import io.github.ryunen344.suburi.ui.screen.structure.StructureScreen
 import io.github.ryunen344.suburi.ui.screen.toRoutes
@@ -64,7 +65,7 @@ class MainActivity : AppCompatActivity() {
 
                 NavHost(
                     navController = navController,
-                    startDestination = Routes.Top::class,
+                    startDestination = Routes.Cube::class,
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     routes<Routes.Top> {
@@ -76,6 +77,9 @@ class MainActivity : AppCompatActivity() {
                                 navController.navigate(Routes.Structures(Structure.random()))
                             },
                         )
+                    }
+                    routes<Routes.Cube> {
+                        CubeScreen()
                     }
                     routes<Routes.Uuid> {
                         UuidScreen(uuid = it.toRoutes<Routes.Uuid>().uuid)
