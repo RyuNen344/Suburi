@@ -13,7 +13,7 @@ class TimberSLF4JLoggerFactory : ILoggerFactory {
 
     override fun getLogger(name: String?): Logger {
         val tag = name?.let(::createTag) ?: TAG_ANONYMOUS
-        return loggers[tag] ?: TimberSLF4JLogger(tag).also { loggers[tag] = it }
+        return loggers.computeIfAbsent(tag, ::TimberSLF4JLogger)
     }
 
     private fun createTag(name: String): String {
