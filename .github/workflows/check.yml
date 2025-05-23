@@ -61,7 +61,7 @@ jobs:
       - name: run unit test
         shell: bash
         run: |
-          ./gradlew testDebugUnitTest --no-configuration-cache
+          ./gradlew testDebugUnitTest
       - uses: dorny/test-reporter@v2
         if: ${{ !cancelled() }}
         with:
