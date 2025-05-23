@@ -9,10 +9,10 @@ class ChunkedDebugTree : Timber.DebugTree() {
 
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
         val bytes = message.toByteArray()
-        if (bytes.size < MAX_LOG_BYTES) {
+        if (bytes.size <= MAX_LOG_BYTES) {
             super.log(priority, tag, message, t)
         } else {
-            for (chunk in bytes.chunked()) {
+            bytes.chunked().forEach { chunk ->
                 super.log(priority, tag, chunk, t)
             }
         }
@@ -25,20 +25,26 @@ class ChunkedDebugTree : Timber.DebugTree() {
             val newline = indexOf(NEW_LINE_BYTE, offset, end)
             if (newline != -1) {
                 end = newline + 1
+                yield(decodeToString(offset, end))
             } else {
-                while (end > offset && decodeToString(offset, end).lastOrNull() == REPLACEMENT_CHARACTER) {
-                    end--
+                while (end > offset) {
+                    val decoded = decodeToString(offset, end)
+                    if (decoded.lastOrNull() == REPLACEMENT_CHARACTER) {
+                        end--
+                    } else {
+                        yield(decoded)
+                        break
+                    }
                 }
             }
-            yield(decodeToString(offset, end))
             offset = end
         }
     }
 
     private fun ByteArray.indexOf(
         byte: Byte,
-        startIndex: Int = 0,
-        endIndex: Int = size,
+        startIndex: Int,
+        endIndex: Int,
     ): Int {
         for (i in startIndex until endIndex) {
             if (this[i] == byte) return i
@@ -47,8 +53,11 @@ class ChunkedDebugTree : Timber.DebugTree() {
     }
 
     private companion object {
+        /**
+         * [Timber.DebugTree.MAX_LOG_LENGTH] - 1
+         */
+        private const val MAX_LOG_BYTES = 3999
         private val NEW_LINE_BYTE = '\n'.code.toByte()
-        private const val MAX_LOG_BYTES = 4000
         private const val REPLACEMENT_CHARACTER = '\uFFFD'
     }
 }
