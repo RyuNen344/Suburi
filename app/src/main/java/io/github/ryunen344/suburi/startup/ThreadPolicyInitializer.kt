@@ -24,10 +24,8 @@ import android.os.Build
 import android.os.StrictMode
 import androidx.startup.Initializer
 import io.github.ryunen344.suburi.BuildConfig
-import kotlinx.coroutines.newFixedThreadPoolContext
-import kotlinx.coroutines.runBlocking
 import timber.log.Timber
-import kotlin.reflect.typeOf
+import java.util.concurrent.Executors
 
 class ThreadPolicyInitializer : Initializer<Unit> {
     override fun create(context: Context) {
@@ -37,15 +35,11 @@ class ThreadPolicyInitializer : Initializer<Unit> {
                 StrictMode.setThreadPolicy(
                     StrictMode.ThreadPolicy.Builder()
                         .apply {
-                            val dispatcher = newFixedThreadPoolContext(1, "ThreadPolicyInitializer")
-                            runBlocking(dispatcher) {
-                                typeOf<ThreadPolicyInitializer>()
-                                detectAll()
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                                    penaltyListener(dispatcher.executor, Timber::w)
-                                } else {
-                                    penaltyLog()
-                                }
+                            detectAll()
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                                penaltyListener(Executors.newSingleThreadExecutor(), Timber::w)
+                            } else {
+                                penaltyLog()
                             }
                         }
                         .build(),

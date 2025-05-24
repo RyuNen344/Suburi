@@ -35,20 +35,20 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-internal class HttpClientModule {
+class HttpClientModule {
     @Provides
     @Singleton
-    fun provideHttpClient(
-        okHttpClient: OkHttpClient,
-        json: Json,
+    internal fun provideHttpClient(
+        okHttpClient: dagger.Lazy<OkHttpClient>,
+        json: dagger.Lazy<Json>,
     ): HttpClient {
         return HttpClient(OkHttp) {
             engine {
-                preconfigured = okHttpClient
+                preconfigured = okHttpClient.get()
             }
             install(CallId)
             install(ContentNegotiation) {
-                json(json)
+                json(json.get())
             }
             install(Resources)
             expectSuccess = true
