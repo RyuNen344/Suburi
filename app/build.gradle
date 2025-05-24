@@ -218,6 +218,9 @@ dependencies {
     implementation libs.com.google.dagger.hilt.android
     ksp libs.androidx.hilt.compiler
     ksp libs.com.google.dagger.hilt.compiler
+    implementation libs.auto.mutton.recipe
+    implementation libs.auto.mutton.recipe.compose
+    implementation libs.auto.mutton.recipe.savedstate
     implementation libs.com.squareup.okhttp
     implementation libs.com.squareup.okhttp.logging
     implementation libs.com.squareup.okio
@@ -232,10 +235,6 @@ dependencies {
     implementation libs.org.jetbrains.kotlinx.coroutine.android
     implementation libs.org.jetbrains.kotlinx.serialization.core
     implementation libs.timber
-
-    implementation "io.github.ryunen344.mutton:auto-mutton-recipe:1.1.0"
-    implementation "io.github.ryunen344.mutton:auto-mutton-recipe-compose:1.1.0"
-    implementation "io.github.ryunen344.mutton:auto-mutton-recipe-savedstate:1.1.0"
 
     // test
     testImplementation libs.junit
