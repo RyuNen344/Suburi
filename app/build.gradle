@@ -155,6 +155,10 @@ kotlin {
             'kotlinx.coroutines.InternalCoroutinesApi',
             'kotlinx.coroutines.ExperimentalForInheritanceCoroutinesApi',
             'kotlinx.coroutines.InternalForInheritanceCoroutinesApi',
+
+            // coil
+            'coil3.annotation.ExperimentalCoilApi',
+            'coil3.annotation.InternalCoilApi',
         ]
     }
 }
@@ -225,6 +229,13 @@ dependencies {
     implementation libs.com.squareup.okhttp.logging
     implementation libs.com.squareup.okio
     coreLibraryDesugaring libs.desugar.jdk.libs
+    implementation libs.io.coil
+    implementation libs.io.coil.compose
+    implementation libs.io.coil.gif
+    implementation libs.io.coil.network.cache
+    implementation libs.io.coil.network.okhttp
+    implementation libs.io.coil.svg
+    implementation libs.io.coil.video
     implementation libs.io.ktor.client.call.id
     implementation libs.io.ktor.client.content.negotiation
     implementation libs.io.ktor.client.core

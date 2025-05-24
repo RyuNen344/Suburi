@@ -1074,6 +1074,7 @@ Compose:
     active: true
   CompositionLocalAllowlist:
     active: true
+    allowedCompositionLocals: LocalImageLoader
   CompositionLocalNaming:
     active: true
   ContentEmitterReturningValues:
