@@ -46,7 +46,11 @@
             android:authorities="${applicationId}.androidx-startup"
             android:exported="false">
             <meta-data
-                android:name="io.github.ryunen344.suburi.startup.StrictModeInitializer"
+                android:name="io.github.ryunen344.suburi.startup.ThreadPolicyInitializer"
+                android:value="androidx.startup" />
+
+            <meta-data
+                android:name="io.github.ryunen344.suburi.startup.VmPolicyInitializer"
                 android:value="androidx.startup" />
 
             <meta-data

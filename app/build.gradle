@@ -1,5 +1,6 @@
 import com.android.build.api.variant.DeviceTestBuilder
 import com.android.build.api.variant.HostTestBuilder
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias libs.plugins.com.android.application
@@ -29,7 +30,7 @@ def additionalExcludes = [
 android {
     namespace 'io.github.ryunen344.suburi'
     compileSdk 35
-    buildToolsVersion = '35.0.0'
+    buildToolsVersion '35.0.0'
 
     defaultConfig {
         applicationId "io.github.ryunen344.suburi"
@@ -107,9 +108,12 @@ android {
         sourceCompatibility libs.versions.jdk.get()
         targetCompatibility libs.versions.jdk.get()
     }
-    kotlinOptions {
-        jvmTarget = libs.versions.jdk.get()
-        options.optIn = [
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.fromTarget(libs.versions.jdk.get())
+        optIn = [
             // compose animation
             'androidx.compose.animation.core.ExperimentalAnimatableApi',
             'androidx.compose.animation.core.ExperimentalAnimationSpecApi',
@@ -179,7 +183,9 @@ androidComponents {
 composeCompiler {
     metricsDestination = layout.buildDirectory.dir("compose_compiler")
     reportsDestination = layout.buildDirectory.dir("compose_compiler")
-    stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
+    stabilityConfigurationFiles = [
+        rootProject.layout.projectDirectory.file("stability_config.conf")
+    ]
 }
 
 dependencies {
@@ -242,6 +248,7 @@ dependencies {
     testImplementation libs.app.cash.turbine
     testImplementation libs.com.google.dagger.hilt.android.test
     testImplementation libs.com.squareup.okhttp.mockwebserver
+    testImplementation libs.com.willowtreeapps.assertk
     testImplementation libs.io.mockk
     testImplementation libs.io.mockk.agent
     testImplementation libs.io.ktor.client.mock
@@ -262,13 +269,13 @@ dependencies {
     androidTestImplementation libs.app.cash.turbine
     androidTestImplementation libs.com.google.dagger.hilt.android.test
     androidTestImplementation libs.com.squareup.okhttp.mockwebserver
+    androidTestImplementation libs.com.willowtreeapps.assertk
     androidTestImplementation libs.io.mockk
     androidTestImplementation libs.io.mockk.android
     androidTestImplementation libs.io.ktor.client.mock
     androidTestImplementation libs.org.jetbrains.kotlin.test
     androidTestImplementation libs.org.jetbrains.kotlin.reflect
     androidTestImplementation libs.org.jetbrains.kotlinx.coroutine.test
-
     androidTestImplementation libs.androidx.test.espresso.core
     androidTestImplementation libs.androidx.test.uiautomator
     androidTestImplementation libs.androidx.compose.ui.test.junit4
