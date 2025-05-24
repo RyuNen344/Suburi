@@ -28,10 +28,10 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-internal class JsonModule {
+class JsonModule {
     @Provides
     @Singleton
-    fun provideJson(): Json {
+    internal fun provideJson(): Json {
         return Json {
             encodeDefaults = true
             explicitNulls = false

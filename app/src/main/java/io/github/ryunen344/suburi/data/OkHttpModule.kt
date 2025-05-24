@@ -30,11 +30,11 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-internal class OkHttpModule {
+class OkHttpModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    internal fun provideOkHttpClient(): OkHttpClient {
         val timeout = Duration.ofMillis(TIMEOUT_MILLS)
         return OkHttpClient.Builder()
             .eventListener(TrafficStatsEventListener())

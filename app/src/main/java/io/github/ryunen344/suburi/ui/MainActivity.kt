@@ -49,13 +49,14 @@ import io.github.ryunen344.suburi.ui.screen.toRoutes
 import io.github.ryunen344.suburi.ui.screen.top.TopScreen
 import io.github.ryunen344.suburi.ui.screen.uuid.UuidScreen
 import io.github.ryunen344.suburi.ui.theme.SuburiTheme
+import io.github.ryunen344.suburi.util.coroutines.DefaultDispatcher
 import io.github.ryunen344.suburi.util.coroutines.IoDispatcher
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.url
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -67,17 +68,21 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity() {
 
     @Inject
-    lateinit var okHttpClient: OkHttpClient
+    lateinit var okHttpClient: dagger.Lazy<OkHttpClient>
 
     @Inject
-    lateinit var httpClient: HttpClient
+    lateinit var httpClient: dagger.Lazy<HttpClient>
 
     @Inject
-    lateinit var imageLoader: ImageLoader
+    lateinit var imageLoader: dagger.Lazy<ImageLoader>
+
+    @Inject
+    @DefaultDispatcher
+    lateinit var defaultDispatcher: dagger.Lazy<CoroutineDispatcher>
 
     @Inject
     @IoDispatcher
-    lateinit var dispatcher: CoroutineDispatcher
+    lateinit var ioDispatcher: dagger.Lazy<CoroutineDispatcher>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -94,7 +99,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-                CompositionLocalProvider(LocalImageLoader provides imageLoader) {
+                CompositionLocalProvider(LocalImageLoader provides imageLoader.get()) {
                     NavHost(
                         navController = navController,
                         startDestination = Routes.Top::class,
@@ -133,32 +138,32 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        lifecycleScope.launch {
+        lifecycleScope.async(defaultDispatcher.get()) {
             delay(timeMillis = 5000)
             runCatching {
-                withContext(dispatcher) {
+                withContext(ioDispatcher.get()) {
                     val request = Request.Builder()
                         .url("https://www.google.com")
                         .build()
-                    okHttpClient.newCall(request).executeAsync()
+                    okHttpClient.get().newCall(request).executeAsync()
                 }
             }.onSuccess { response ->
-                Timber.wtf("okhttp response $response")
+                Timber.d("okhttp response $response")
             }.onFailure {
                 Timber.e(it)
             }
         }
 
-        lifecycleScope.launch {
+        lifecycleScope.async(defaultDispatcher.get()) {
             delay(timeMillis = 5500)
             runCatching {
-                withContext(dispatcher) {
-                    httpClient.get {
+                withContext(ioDispatcher.get()) {
+                    httpClient.get().get {
                         url("https://www.google.com")
                     }
                 }
             }.onSuccess { response ->
-                Timber.wtf("ktor response $response")
+                Timber.d("ktor response $response")
             }.onFailure {
                 Timber.e(it)
             }

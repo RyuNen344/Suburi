@@ -37,7 +37,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import io.github.ryunen344.suburi.util.coroutines.IoDispatcher
+import io.github.ryunen344.suburi.util.coroutines.DefaultDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import okhttp3.OkHttpClient
 import okio.FileSystem
@@ -51,10 +51,10 @@ class CoilModule {
 
     @Provides
     @Singleton
-    fun provideImageLoader(
+    internal fun provideImageLoader(
         @ApplicationContext context: Context,
-        okHttpClient: OkHttpClient,
-        @IoDispatcher dispatcher: CoroutineDispatcher,
+        okHttpClient: dagger.Lazy<OkHttpClient>,
+        @DefaultDispatcher dispatcher: CoroutineDispatcher,
     ): ImageLoader {
         return ImageLoader.Builder(context)
             // disable service loader due to organized by dagger
@@ -65,7 +65,7 @@ class CoilModule {
                         // network
                         add(
                             OkHttpNetworkFetcherFactory(
-                                callFactory = { okHttpClient.newBuilder().build() },
+                                callFactory = { okHttpClient.get().newBuilder().build() },
                                 cacheStrategy = { CacheStrategy.DEFAULT },
                             ) to CoilUri::class,
                         )
