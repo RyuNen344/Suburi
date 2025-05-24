@@ -25,6 +25,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -33,7 +34,9 @@ import androidx.core.util.Consumer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import coil3.ImageLoader
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.ryunen344.suburi.coil.LocalImageLoader
 import io.github.ryunen344.suburi.data.executeAsync
 import io.github.ryunen344.suburi.ui.screen.Routes
 import io.github.ryunen344.suburi.ui.screen.Structure
@@ -46,10 +49,11 @@ import io.github.ryunen344.suburi.ui.screen.toRoutes
 import io.github.ryunen344.suburi.ui.screen.top.TopScreen
 import io.github.ryunen344.suburi.ui.screen.uuid.UuidScreen
 import io.github.ryunen344.suburi.ui.theme.SuburiTheme
+import io.github.ryunen344.suburi.util.coroutines.IoDispatcher
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.url
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -68,6 +72,13 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var httpClient: HttpClient
 
+    @Inject
+    lateinit var imageLoader: ImageLoader
+
+    @Inject
+    @IoDispatcher
+    lateinit var dispatcher: CoroutineDispatcher
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         installSplashScreen()
@@ -83,38 +94,40 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-                NavHost(
-                    navController = navController,
-                    startDestination = Routes.Top::class,
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    routes<Routes.Cube> {
-                        CubeScreen()
-                    }
-                    routes<Routes.Mutton> {
-                        MuttonScreen()
-                    }
-                    routes<Routes.Structures> {
-                        StructureScreen(structure = it.toRoutes<Routes.Structures>().structure)
-                    }
-                    routes<Routes.Top> {
-                        TopScreen(
-                            onClickCube = {
-                                navController.navigate(Routes.Cube)
-                            },
-                            onClickMutton = {
-                                navController.navigate(Routes.Mutton)
-                            },
-                            onClickUuid = {
-                                navController.navigate(Routes.Uuid(WrappedUuid(UUID.randomUUID())))
-                            },
-                            onClickStructure = {
-                                navController.navigate(Routes.Structures(Structure.random()))
-                            },
-                        )
-                    }
-                    routes<Routes.Uuid> {
-                        UuidScreen(uuid = it.toRoutes<Routes.Uuid>().uuid)
+                CompositionLocalProvider(LocalImageLoader provides imageLoader) {
+                    NavHost(
+                        navController = navController,
+                        startDestination = Routes.Top::class,
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        routes<Routes.Cube> {
+                            CubeScreen()
+                        }
+                        routes<Routes.Mutton> {
+                            MuttonScreen()
+                        }
+                        routes<Routes.Structures> {
+                            StructureScreen(structure = it.toRoutes<Routes.Structures>().structure)
+                        }
+                        routes<Routes.Top> {
+                            TopScreen(
+                                onClickCube = {
+                                    navController.navigate(Routes.Cube)
+                                },
+                                onClickMutton = {
+                                    navController.navigate(Routes.Mutton)
+                                },
+                                onClickUuid = {
+                                    navController.navigate(Routes.Uuid(WrappedUuid(UUID.randomUUID())))
+                                },
+                                onClickStructure = {
+                                    navController.navigate(Routes.Structures(Structure.random()))
+                                },
+                            )
+                        }
+                        routes<Routes.Uuid> {
+                            UuidScreen(uuid = it.toRoutes<Routes.Uuid>().uuid)
+                        }
                     }
                 }
             }
@@ -123,7 +136,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             delay(timeMillis = 5000)
             runCatching {
-                withContext(Dispatchers.IO) {
+                withContext(dispatcher) {
                     val request = Request.Builder()
                         .url("https://www.google.com")
                         .build()
@@ -139,7 +152,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             delay(timeMillis = 5500)
             runCatching {
-                withContext(Dispatchers.IO) {
+                withContext(dispatcher) {
                     httpClient.get {
                         url("https://www.google.com")
                     }
