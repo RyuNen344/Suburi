@@ -33,12 +33,17 @@ import io.github.ryunen344.suburi.ui.screen.WrappedUuid
 @Composable
 internal fun UuidScreen(
     uuid: WrappedUuid,
+    viewModel: UuidViewModel = hiltViewModel(),
 ) {
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding),
         ) {
             Text(text = "uuid $uuid")
+
+            Button(viewModel::hoge) {
+                Text("print uuid")
+            }
         }
     }
 }

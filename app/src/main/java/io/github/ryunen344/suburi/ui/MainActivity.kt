@@ -39,6 +39,7 @@ import io.github.ryunen344.suburi.ui.screen.Routes
 import io.github.ryunen344.suburi.ui.screen.Structure
 import io.github.ryunen344.suburi.ui.screen.WrappedUuid
 import io.github.ryunen344.suburi.ui.screen.cube.CubeScreen
+import io.github.ryunen344.suburi.ui.screen.mutton.MuttonScreen
 import io.github.ryunen344.suburi.ui.screen.routes
 import io.github.ryunen344.suburi.ui.screen.structure.StructureScreen
 import io.github.ryunen344.suburi.ui.screen.toRoutes
@@ -84,12 +85,26 @@ class MainActivity : AppCompatActivity() {
 
                 NavHost(
                     navController = navController,
-                    startDestination = Routes.Cube::class,
+                    startDestination = Routes.Top::class,
                     modifier = Modifier.fillMaxSize(),
                 ) {
+                    routes<Routes.Cube> {
+                        CubeScreen()
+                    }
+                    routes<Routes.Mutton> {
+                        MuttonScreen()
+                    }
+                    routes<Routes.Structures> {
+                        StructureScreen(structure = it.toRoutes<Routes.Structures>().structure)
+                    }
                     routes<Routes.Top> {
                         TopScreen(
-                            it.savedStateHandle,
+                            onClickCube = {
+                                navController.navigate(Routes.Cube)
+                            },
+                            onClickMutton = {
+                                navController.navigate(Routes.Mutton)
+                            },
                             onClickUuid = {
                                 navController.navigate(Routes.Uuid(WrappedUuid(UUID.randomUUID())))
                             },
@@ -98,16 +113,41 @@ class MainActivity : AppCompatActivity() {
                             },
                         )
                     }
-                    routes<Routes.Cube> {
-                        CubeScreen()
-                    }
                     routes<Routes.Uuid> {
                         UuidScreen(uuid = it.toRoutes<Routes.Uuid>().uuid)
                     }
-                    routes<Routes.Structures> {
-                        StructureScreen(structure = it.toRoutes<Routes.Structures>().structure)
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            delay(timeMillis = 5000)
+            runCatching {
+                withContext(Dispatchers.IO) {
+                    val request = Request.Builder()
+                        .url("https://www.google.com")
+                        .build()
+                    okHttpClient.newCall(request).executeAsync()
+                }
+            }.onSuccess { response ->
+                Timber.wtf("okhttp response $response")
+            }.onFailure {
+                Timber.e(it)
+            }
+        }
+
+        lifecycleScope.launch {
+            delay(timeMillis = 5500)
+            runCatching {
+                withContext(Dispatchers.IO) {
+                    httpClient.get {
+                        url("https://www.google.com")
                     }
                 }
+            }.onSuccess { response ->
+                Timber.wtf("ktor response $response")
+            }.onFailure {
+                Timber.e(it)
             }
         }
     }
