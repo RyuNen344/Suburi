@@ -218,6 +218,9 @@ dependencies {
     implementation libs.com.google.dagger.hilt.android
     ksp libs.androidx.hilt.compiler
     ksp libs.com.google.dagger.hilt.compiler
+    implementation libs.auto.mutton.recipe
+    implementation libs.auto.mutton.recipe.compose
+    implementation libs.auto.mutton.recipe.savedstate
     implementation libs.com.squareup.okhttp
     implementation libs.com.squareup.okhttp.logging
     implementation libs.com.squareup.okio

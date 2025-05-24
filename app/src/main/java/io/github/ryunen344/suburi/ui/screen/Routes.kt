@@ -67,31 +67,37 @@ val onWrappedUuidParse: ((String) -> WrappedUuid?) = { value ->
 @Serializable
 sealed class Routes {
     @Serializable
-    data object Top : Routes()
-
-    @Serializable
     data object Cube : Routes()
 
     @Serializable
-    data class Uuid(val uuid: WrappedUuid) : Routes()
+    data object Mutton : Routes()
 
     @Serializable
     data class Structures(val structure: Structure) : Routes()
+
+    @Serializable
+    data object Top : Routes()
+
+    @Serializable
+    data class Uuid(val uuid: WrappedUuid) : Routes()
 }
 
 inline val <reified T : Routes> KClass<T>.typeMap: Map<KType, @JvmSuppressWildcards NavType<*>>
     get() = when (this) {
-        Routes.Top::class -> emptyMap()
         Routes.Cube::class -> emptyMap()
-        Routes.Uuid::class -> ParcelableNavTypeMap<WrappedUuid>(onParseValue = onWrappedUuidParse)
+        Routes.Mutton::class -> emptyMap()
         Routes.Structures::class -> ParcelableNavTypeMap<Structure>()
+        Routes.Top::class -> emptyMap()
+        Routes.Uuid::class -> ParcelableNavTypeMap<WrappedUuid>(onParseValue = onWrappedUuidParse)
         else -> error("unexpected type parameter")
     }
 
 val <T : Routes> KClass<T>.deepLinks: List<NavDeepLink>
     get() = when (this) {
-        Routes.Top::class -> emptyList()
         Routes.Cube::class -> emptyList()
+        Routes.Mutton::class -> emptyList()
+        Routes.Structures::class -> emptyList()
+        Routes.Top::class -> emptyList()
         Routes.Uuid::class -> listOf(
             navDeepLink<Routes.Uuid>(
                 basePath = "https://www.example.com/uuid",
@@ -99,18 +105,23 @@ val <T : Routes> KClass<T>.deepLinks: List<NavDeepLink>
             ),
         )
 
-        Routes.Structures::class -> emptyList()
         else -> error("unexpected type parameter")
     }
 
 @Parcelize
 @Serializable
-class WrappedUuid(@Serializable(with = UUIDSerializer::class) val value: UUID) : java.io.Serializable, Parcelable
+class WrappedUuid(@Serializable(with = UUIDSerializer::class) val value: UUID) : java.io.Serializable, Parcelable {
+    companion object {
+        private const val serialVersionUID: Long = -1L
+    }
+}
 
 @Parcelize
 @Serializable
 class Structure(val value1: String, val value2: Long, val value3: String) : java.io.Serializable, Parcelable {
     companion object {
+        private const val serialVersionUID: Long = -1L
+
         fun random(): Structure {
             return Structure(
                 value1 = UUID.randomUUID().toString(),

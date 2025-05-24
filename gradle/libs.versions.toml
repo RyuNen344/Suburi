@@ -27,6 +27,7 @@ androidx-uiautomator = "2.3.0"
 androidx-webkit = "1.13.0"
 assertk = "0.28.1"
 atomicfu = "0.27.0"
+auto-mutton-recipe = "1.1.0"
 com-google-dagger = "2.56.2"
 com-google-ksp = "2.1.21-2.0.1"
 com-google-truth = "1.4.4"
@@ -87,6 +88,9 @@ androidx-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", 
 androidx-trace = { module = "androidx.tracing:tracing", version.ref = "androidx-tracing" }
 androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "androidx-webkit" }
 app-cash-turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+auto-mutton-recipe = { module = "io.github.ryunen344.mutton:auto-mutton-recipe", version.ref = "auto-mutton-recipe" }
+auto-mutton-recipe-compose = { module = "io.github.ryunen344.mutton:auto-mutton-recipe-compose", version.ref = "auto-mutton-recipe" }
+auto-mutton-recipe-savedstate = { module = "io.github.ryunen344.mutton:auto-mutton-recipe-savedstate", version.ref = "auto-mutton-recipe" }
 com-google-dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "com-google-dagger" }
 com-google-dagger-hilt-android-test = { module = "com.google.dagger:hilt-android-testing", version.ref = "com-google-dagger" }
 com-google-dagger-hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "com-google-dagger" }
