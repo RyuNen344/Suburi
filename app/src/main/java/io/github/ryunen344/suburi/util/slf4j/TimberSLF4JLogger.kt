@@ -17,7 +17,7 @@
  * License-Filename: LICENSE.md
  */
 
-package io.github.ryunen344.suburi.slf4j
+package io.github.ryunen344.suburi.util.slf4j
 
 import android.util.Log
 import org.slf4j.Logger
