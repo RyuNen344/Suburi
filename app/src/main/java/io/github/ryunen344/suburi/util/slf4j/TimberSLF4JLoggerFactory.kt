@@ -17,7 +17,7 @@
  * License-Filename: LICENSE.md
  */
 
-package io.github.ryunen344.suburi.slf4j
+package io.github.ryunen344.suburi.util.slf4j
 
 import android.os.Build
 import org.slf4j.ILoggerFactory
