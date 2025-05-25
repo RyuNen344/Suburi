@@ -37,9 +37,7 @@ import androidx.navigation.compose.rememberNavController
 import coil3.ImageLoader
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.ryunen344.suburi.coil.LocalImageLoader
-import io.github.ryunen344.suburi.data.executeAsync
 import io.github.ryunen344.suburi.ui.screen.Routes
-import io.github.ryunen344.suburi.ui.screen.Structure
 import io.github.ryunen344.suburi.ui.screen.WrappedUuid
 import io.github.ryunen344.suburi.ui.screen.cube.CubeScreen
 import io.github.ryunen344.suburi.ui.screen.mutton.MuttonScreen
@@ -52,23 +50,21 @@ import io.github.ryunen344.suburi.ui.theme.SuburiTheme
 import io.github.ryunen344.suburi.util.coroutines.DefaultDispatcher
 import io.github.ryunen344.suburi.util.coroutines.IoDispatcher
 import io.ktor.client.HttpClient
-import io.ktor.client.request.get
+import io.ktor.client.call.body
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.request.url
+import io.ktor.http.contentType
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import kotlinx.serialization.Serializable
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-
-    @Inject
-    lateinit var okHttpClient: dagger.Lazy<OkHttpClient>
 
     @Inject
     lateinit var httpClient: dagger.Lazy<HttpClient>
@@ -125,9 +121,7 @@ class MainActivity : AppCompatActivity() {
                                 onClickUuid = {
                                     navController.navigate(Routes.Uuid(WrappedUuid(UUID.randomUUID())))
                                 },
-                                onClickStructure = {
-                                    navController.navigate(Routes.Structures(Structure.random()))
-                                },
+                                onClickStructure = ::request,
                             )
                         }
                         routes<Routes.Uuid> {
@@ -137,30 +131,27 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
 
+    private fun request() {
         lifecycleScope.async(defaultDispatcher.get()) {
-            delay(timeMillis = 5000)
             runCatching {
                 withContext(ioDispatcher.get()) {
-                    val request = Request.Builder()
-                        .url("https://www.google.com")
-                        .build()
-                    okHttpClient.get().newCall(request).executeAsync()
-                }
-            }.onSuccess { response ->
-                Timber.d("okhttp response $response")
-            }.onFailure {
-                Timber.e(it)
-            }
-        }
-
-        lifecycleScope.async(defaultDispatcher.get()) {
-            delay(timeMillis = 5500)
-            runCatching {
-                withContext(ioDispatcher.get()) {
-                    httpClient.get().get {
+                    httpClient.get().post {
                         url("https://www.google.com")
-                    }
+                        contentType(io.ktor.http.ContentType.Application.Json)
+                        @Suppress("MagicNumber")
+                        setBody(
+                            listOf(
+                                Customer(3, 34546, "Jet", true),
+                                Customer(3, 34546, "Jet", true),
+                                Customer(3, 34546, "Jet", true),
+                                Customer(3, 34546, "Jet", true),
+                                Customer(3, 34546, "Jet", true),
+                                Customer(3, 34546, "Jet", true),
+                            ),
+                        )
+                    }.body<Customer>()
                 }
             }.onSuccess { response ->
                 Timber.d("ktor response $response")
@@ -170,3 +161,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
+
+@Serializable
+data class Customer(val userId: Int, val id: Int, val title: String, val completed: Boolean)
