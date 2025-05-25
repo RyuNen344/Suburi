@@ -110,8 +110,9 @@ class OkioJsonConverter(private val format: Json) : ContentConverter {
 
     private suspend fun ByteReadChannel.readRemaining(): BufferedSource {
         val result = Buffer()
+        val input = readBuffer.inputStream()
         while (!isClosedForRead) {
-            result.readFrom(readBuffer.inputStream())
+            result.readFrom(input)
             awaitContent()
         }
         rethrowCloseCauseIfNeeded()
