@@ -30,7 +30,6 @@ import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.InternalAPI
 import io.ktor.utils.io.charsets.Charset
-import io.ktor.utils.io.rethrowCloseCauseIfNeeded
 import io.ktor.utils.io.streams.inputStream
 import kotlinx.io.RawSource
 import kotlinx.io.asOutputStream
@@ -115,7 +114,7 @@ class OkioJsonConverter(private val format: Json) : ContentConverter {
             result.readFrom(input)
             awaitContent()
         }
-        rethrowCloseCauseIfNeeded()
+        closedCause?.let { throw it }
         return result
     }
 }
