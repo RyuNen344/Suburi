@@ -20,15 +20,12 @@
 package io.github.ryunen344.suburi.data
 
 import android.util.Log
-import assertk.Assert
-import assertk.all
 import assertk.assertThat
-import assertk.assertions.hasSize
 import assertk.assertions.index
-import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import assertk.assertions.isLessThan
 import assertk.assertions.prop
-import assertk.assertions.support.fail
+import assertk.fail
 import io.github.ryunen344.suburi.test.rules.MockWebServerRule
 import okhttp3.HttpUrl
 import okhttp3.MediaType.Companion.toMediaType
@@ -82,12 +79,6 @@ class TimberHttpLoggingInterceptorTest {
 
     private fun request(): Request.Builder = Request.Builder().url(url)
 
-    private fun Assert<String>.isMatchTo(regex: String) = given { value ->
-        if (!value.matches(Regex(regex))) {
-            fail(regex, value)
-        }
-    }
-
     @Test
     fun testLevel_thenReturnNone() {
         assertThat(interceptor.level).isEqualTo(HttpLoggingInterceptor.Level.NONE)
@@ -98,7 +89,7 @@ class TimberHttpLoggingInterceptorTest {
         setLevel(HttpLoggingInterceptor.Level.NONE)
         serverRule.server.enqueue(MockResponse())
         client.newCall(request().build()).execute().closeQuietly()
-        assertThat(record.logs).isEmpty()
+        record.assertNoMoreLogs()
     }
 
     @Test
@@ -106,11 +97,10 @@ class TimberHttpLoggingInterceptorTest {
         setLevel(HttpLoggingInterceptor.Level.BASIC)
         serverRule.server.enqueue(MockResponse())
         client.newCall(request().get().build()).execute().closeQuietly()
-        assertThat(record.logs).all {
-            hasSize(2)
-            index(0).prop(LogData::message).isEqualTo("--> GET $url http/1.1")
-            index(1).prop(LogData::message).isMatchTo("""<-- 200 OK $url \(\d+ms, 0-byte body\)""")
-        }
+        record
+            .assertLogEqual("--> GET $url http/1.1")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms, 0-byte body\)""")
+            .assertNoMoreLogs()
     }
 
     @Test
@@ -118,11 +108,10 @@ class TimberHttpLoggingInterceptorTest {
         setLevel(HttpLoggingInterceptor.Level.BASIC)
         serverRule.server.enqueue(MockResponse())
         client.newCall(request().post("Hi?".toRequestBody(PLAIN)).build()).execute().closeQuietly()
-        assertThat(record.logs).all {
-            hasSize(2)
-            index(0).prop(LogData::message).isEqualTo("--> POST $url http/1.1 (3-byte body)")
-            index(1).prop(LogData::message).isMatchTo("""<-- 200 OK $url \(\d+ms, 0-byte body\)""")
-        }
+        record
+            .assertLogEqual("--> POST $url http/1.1 (3-byte body)")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms, 0-byte body\)""")
+            .assertNoMoreLogs()
     }
 
     @Test
@@ -134,11 +123,10 @@ class TimberHttpLoggingInterceptorTest {
                 .setHeader("Content-Type", PLAIN),
         )
         client.newCall(request().get().build()).execute().closeQuietly()
-        assertThat(record.logs).all {
-            hasSize(2)
-            index(0).prop(LogData::message).isEqualTo("--> GET $url http/1.1")
-            index(1).prop(LogData::message).isMatchTo("""<-- 200 OK $url \(\d+ms, 6-byte body\)""")
-        }
+        record
+            .assertLogEqual("--> GET $url http/1.1")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms, 6-byte body\)""")
+            .assertNoMoreLogs()
     }
 
     @Test
@@ -150,11 +138,10 @@ class TimberHttpLoggingInterceptorTest {
                 .setHeader("Content-Type", PLAIN),
         )
         client.newCall(request().get().build()).execute().closeQuietly()
-        assertThat(record.logs).all {
-            hasSize(2)
-            index(0).prop(LogData::message).isEqualTo("--> GET $url http/1.1")
-            index(1).prop(LogData::message).isMatchTo("""<-- 200 OK $url \(\d+ms, unknown-length body\)""")
-        }
+        record
+            .assertLogEqual("--> GET $url http/1.1")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms, unknown-length body\)""")
+            .assertNoMoreLogs()
     }
 
     @Test
@@ -162,18 +149,17 @@ class TimberHttpLoggingInterceptorTest {
         setLevel(HttpLoggingInterceptor.Level.HEADERS)
         serverRule.server.enqueue(MockResponse())
         client.newCall(request().get().build()).execute().closeQuietly()
-        assertThat(record.logs).all {
-            hasSize(9)
-            index(0).prop(LogData::message).isEqualTo("--> GET $url http/1.1")
-            index(1).prop(LogData::message).isEqualTo("Host: $host")
-            index(2).prop(LogData::message).isEqualTo("Connection: Keep-Alive")
-            index(3).prop(LogData::message).isEqualTo("Accept-Encoding: gzip")
-            index(4).prop(LogData::message).isMatchTo("""User-Agent: okhttp/.+""")
-            index(5).prop(LogData::message).isEqualTo("--> END GET")
-            index(6).prop(LogData::message).isMatchTo("""<-- 200 OK $url \(\d+ms\)""")
-            index(7).prop(LogData::message).isEqualTo("Content-Length: 0")
-            index(8).prop(LogData::message).isEqualTo("<-- END HTTP")
-        }
+        record
+            .assertLogEqual("--> GET $url http/1.1")
+            .assertLogEqual("Host: $host")
+            .assertLogEqual("Connection: Keep-Alive")
+            .assertLogEqual("Accept-Encoding: gzip")
+            .assertLogMatch("""User-Agent: okhttp/.+""")
+            .assertLogEqual("--> END GET")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms\)""")
+            .assertLogEqual("Content-Length: 0")
+            .assertLogEqual("<-- END HTTP")
+            .assertNoMoreLogs()
     }
 
     @Test
@@ -181,20 +167,19 @@ class TimberHttpLoggingInterceptorTest {
         setLevel(HttpLoggingInterceptor.Level.HEADERS)
         serverRule.server.enqueue(MockResponse())
         client.newCall(request().post("Hi?".toRequestBody(PLAIN)).build()).execute().closeQuietly()
-        assertThat(record.logs).all {
-            hasSize(11)
-            index(0).prop(LogData::message).isEqualTo("--> POST $url http/1.1")
-            index(1).prop(LogData::message).isEqualTo("Content-Type: text/plain; charset=utf-8")
-            index(2).prop(LogData::message).isEqualTo("Content-Length: 3")
-            index(3).prop(LogData::message).isEqualTo("Host: $host")
-            index(4).prop(LogData::message).isEqualTo("Connection: Keep-Alive")
-            index(5).prop(LogData::message).isEqualTo("Accept-Encoding: gzip")
-            index(6).prop(LogData::message).isMatchTo("""User-Agent: okhttp/.+""")
-            index(7).prop(LogData::message).isEqualTo("--> END POST")
-            index(8).prop(LogData::message).isMatchTo("""<-- 200 OK $url \(\d+ms\)""")
-            index(9).prop(LogData::message).isEqualTo("Content-Length: 0")
-            index(10).prop(LogData::message).isEqualTo("<-- END HTTP")
-        }
+        record
+            .assertLogEqual("--> POST $url http/1.1")
+            .assertLogEqual("Content-Type: text/plain; charset=utf-8")
+            .assertLogEqual("Content-Length: 3")
+            .assertLogEqual("Host: $host")
+            .assertLogEqual("Connection: Keep-Alive")
+            .assertLogEqual("Accept-Encoding: gzip")
+            .assertLogMatch("""User-Agent: okhttp/.+""")
+            .assertLogEqual("--> END POST")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms\)""")
+            .assertLogEqual("Content-Length: 0")
+            .assertLogEqual("<-- END HTTP")
+            .assertNoMoreLogs()
     }
 
     @Test
@@ -202,19 +187,18 @@ class TimberHttpLoggingInterceptorTest {
         setLevel(HttpLoggingInterceptor.Level.HEADERS)
         serverRule.server.enqueue(MockResponse())
         client.newCall(request().post("Hi?".toRequestBody(null)).build()).execute().closeQuietly()
-        assertThat(record.logs).all {
-            hasSize(10)
-            index(0).prop(LogData::message).isEqualTo("--> POST $url http/1.1")
-            index(1).prop(LogData::message).isEqualTo("Content-Length: 3")
-            index(2).prop(LogData::message).isEqualTo("Host: $host")
-            index(3).prop(LogData::message).isEqualTo("Connection: Keep-Alive")
-            index(4).prop(LogData::message).isEqualTo("Accept-Encoding: gzip")
-            index(5).prop(LogData::message).isMatchTo("""User-Agent: okhttp/.+""")
-            index(6).prop(LogData::message).isEqualTo("--> END POST")
-            index(7).prop(LogData::message).isMatchTo("""<-- 200 OK $url \(\d+ms\)""")
-            index(8).prop(LogData::message).isEqualTo("Content-Length: 0")
-            index(9).prop(LogData::message).isEqualTo("<-- END HTTP")
-        }
+        record
+            .assertLogEqual("--> POST $url http/1.1")
+            .assertLogEqual("Content-Length: 3")
+            .assertLogEqual("Host: $host")
+            .assertLogEqual("Connection: Keep-Alive")
+            .assertLogEqual("Accept-Encoding: gzip")
+            .assertLogMatch("""User-Agent: okhttp/.+""")
+            .assertLogEqual("--> END POST")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms\)""")
+            .assertLogEqual("Content-Length: 0")
+            .assertLogEqual("<-- END HTTP")
+            .assertNoMoreLogs()
     }
 
     @Test
@@ -228,20 +212,19 @@ class TimberHttpLoggingInterceptorTest {
             }
         }
         client.newCall(request().post(body).build()).execute().closeQuietly()
-        assertThat(record.logs).all {
-            hasSize(11)
-            index(0).prop(LogData::message).isEqualTo("--> POST $url http/1.1")
-            index(1).prop(LogData::message).isEqualTo("Content-Type: text/plain; charset=utf-8")
-            index(2).prop(LogData::message).isEqualTo("Transfer-Encoding: chunked")
-            index(3).prop(LogData::message).isEqualTo("Host: $host")
-            index(4).prop(LogData::message).isEqualTo("Connection: Keep-Alive")
-            index(5).prop(LogData::message).isEqualTo("Accept-Encoding: gzip")
-            index(6).prop(LogData::message).isMatchTo("""User-Agent: okhttp/.+""")
-            index(7).prop(LogData::message).isEqualTo("--> END POST")
-            index(8).prop(LogData::message).isMatchTo("""<-- 200 OK $url \(\d+ms\)""")
-            index(9).prop(LogData::message).isEqualTo("Content-Length: 0")
-            index(10).prop(LogData::message).isEqualTo("<-- END HTTP")
-        }
+        record
+            .assertLogEqual("--> POST $url http/1.1")
+            .assertLogEqual("Content-Type: text/plain; charset=utf-8")
+            .assertLogEqual("Transfer-Encoding: chunked")
+            .assertLogEqual("Host: $host")
+            .assertLogEqual("Connection: Keep-Alive")
+            .assertLogEqual("Accept-Encoding: gzip")
+            .assertLogMatch("""User-Agent: okhttp/.+""")
+            .assertLogEqual("--> END POST")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms\)""")
+            .assertLogEqual("Content-Length: 0")
+            .assertLogEqual("<-- END HTTP")
+            .assertNoMoreLogs()
     }
 
     @Test
@@ -253,19 +236,18 @@ class TimberHttpLoggingInterceptorTest {
                 .setHeader("Content-Type", PLAIN),
         )
         client.newCall(request().get().build()).execute().closeQuietly()
-        assertThat(record.logs).all {
-            hasSize(10)
-            index(0).prop(LogData::message).isEqualTo("--> GET $url http/1.1")
-            index(1).prop(LogData::message).isEqualTo("Host: $host")
-            index(2).prop(LogData::message).isEqualTo("Connection: Keep-Alive")
-            index(3).prop(LogData::message).isEqualTo("Accept-Encoding: gzip")
-            index(4).prop(LogData::message).isMatchTo("""User-Agent: okhttp/.+""")
-            index(5).prop(LogData::message).isEqualTo("--> END GET")
-            index(6).prop(LogData::message).isMatchTo("""<-- 200 OK $url \(\d+ms\)""")
-            index(7).prop(LogData::message).isEqualTo("Content-Length: 6")
-            index(8).prop(LogData::message).isEqualTo("Content-Type: text/plain; charset=utf-8")
-            index(9).prop(LogData::message).isEqualTo("<-- END HTTP")
-        }
+        record
+            .assertLogEqual("--> GET $url http/1.1")
+            .assertLogEqual("Host: $host")
+            .assertLogEqual("Connection: Keep-Alive")
+            .assertLogEqual("Accept-Encoding: gzip")
+            .assertLogMatch("""User-Agent: okhttp/.+""")
+            .assertLogEqual("--> END GET")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms\)""")
+            .assertLogEqual("Content-Length: 6")
+            .assertLogEqual("Content-Type: text/plain; charset=utf-8")
+            .assertLogEqual("<-- END HTTP")
+            .assertNoMoreLogs()
     }
 
     @Test
@@ -277,19 +259,18 @@ class TimberHttpLoggingInterceptorTest {
                 .setHeader("Content-Type", PLAIN),
         )
         client.newCall(request().get().build()).execute().closeQuietly()
-        assertThat(record.logs).all {
-            hasSize(10)
-            index(0).prop(LogData::message).isEqualTo("--> GET $url http/1.1")
-            index(1).prop(LogData::message).isEqualTo("Host: $host")
-            index(2).prop(LogData::message).isEqualTo("Connection: Keep-Alive")
-            index(3).prop(LogData::message).isEqualTo("Accept-Encoding: gzip")
-            index(4).prop(LogData::message).isMatchTo("""User-Agent: okhttp/.+""")
-            index(5).prop(LogData::message).isEqualTo("--> END GET")
-            index(6).prop(LogData::message).isMatchTo("""<-- 200 OK $url \(\d+ms\)""")
-            index(7).prop(LogData::message).isEqualTo("Transfer-encoding: chunked")
-            index(8).prop(LogData::message).isEqualTo("Content-Type: text/plain; charset=utf-8")
-            index(9).prop(LogData::message).isEqualTo("<-- END HTTP")
-        }
+        record
+            .assertLogEqual("--> GET $url http/1.1")
+            .assertLogEqual("Host: $host")
+            .assertLogEqual("Connection: Keep-Alive")
+            .assertLogEqual("Accept-Encoding: gzip")
+            .assertLogMatch("""User-Agent: okhttp/.+""")
+            .assertLogEqual("--> END GET")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms\)""")
+            .assertLogEqual("Transfer-encoding: chunked")
+            .assertLogEqual("Content-Type: text/plain; charset=utf-8")
+            .assertLogEqual("<-- END HTTP")
+            .assertNoMoreLogs()
     }
 
     private class RecordingTree : Timber.Tree() {
@@ -297,8 +278,32 @@ class TimberHttpLoggingInterceptorTest {
         val logs: List<LogData>
             get() = _logs.toList()
 
+        private var index = 0
+
         override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
             _logs.add(LogData(priority, tag, message, t))
+        }
+
+        fun assertLogEqual(expected: String) = apply {
+            assertThat(index).isLessThan(logs.size)
+            assertThat(logs).index(index++)
+                .prop(LogData::message)
+                .isEqualTo(expected)
+        }
+
+        fun assertLogMatch(regex: String) = apply {
+            assertThat(index).isLessThan(logs.size)
+            assertThat(logs).index(index++)
+                .prop(LogData::message)
+                .given { value ->
+                    if (!value.matches(Regex(regex))) {
+                        fail(regex, value)
+                    }
+                }
+        }
+
+        fun assertNoMoreLogs() {
+            assertThat(logs.size).isEqualTo(index)
         }
     }
 
