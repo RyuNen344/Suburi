@@ -66,7 +66,6 @@ class OkioJsonConverter(private val format: Json) : ContentConverter {
             )
         }
 
-        // FIXME: can't see the content in logcat, because HttpLoggingInterceptor doesn't log the body of StreamRequestBody(ReadChannelContent, WriteChannelContent)
         return ChannelWriterContent(
             body = {
                 writeBuffer.transferFrom(
