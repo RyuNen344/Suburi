@@ -291,7 +291,11 @@ class TimberHttpLoggingInterceptorTest {
     @Test
     fun testLog_givenBody_whenRequestsPost_thenLogsBody() {
         setLevel(HttpLoggingInterceptor.Level.BODY)
-        serverRule.server.enqueue(MockResponse())
+        serverRule.server.enqueue(
+            MockResponse()
+                .setBody("Hello!")
+                .setHeader("Content-Type", PLAIN),
+        )
         client.newCall(request().post("Hi?".toRequestBody(PLAIN)).build()).execute().closeQuietly()
         record
             .assertLogEqual("--> POST $url http/1.1")
@@ -303,8 +307,9 @@ class TimberHttpLoggingInterceptorTest {
             .assertLogMatch("""User-Agent: okhttp/.+""")
             .assertLogEqual("\nHi?\n--> END POST (3-byte body)\n")
             .assertLogMatch("""<-- 200 OK $url \(\d+ms\)""")
-            .assertLogEqual("Content-Length: 0")
-            .assertLogEqual("<-- END HTTP (0-byte body)\n")
+            .assertLogEqual("Content-Length: 6")
+            .assertLogEqual("Content-Type: text/plain; charset=utf-8")
+            .assertLogEqual("\nHello!\n<-- END HTTP (6-byte body)\n")
             .assertNoMoreLogs()
     }
 
