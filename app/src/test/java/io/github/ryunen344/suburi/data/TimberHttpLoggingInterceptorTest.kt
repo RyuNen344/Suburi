@@ -25,7 +25,7 @@ import assertk.assertions.index
 import assertk.assertions.isEqualTo
 import assertk.assertions.isLessThan
 import assertk.assertions.prop
-import assertk.fail
+import assertk.assertions.support.fail
 import io.github.ryunen344.suburi.test.rules.MockWebServerRule
 import okhttp3.HttpUrl
 import okhttp3.MediaType.Companion.toMediaType
@@ -79,6 +79,7 @@ class TimberHttpLoggingInterceptorTest {
 
     private fun request(): Request.Builder = Request.Builder().url(url)
 
+    // region: level none
     @Test
     fun testLevel_thenReturnNone() {
         assertThat(interceptor.level).isEqualTo(HttpLoggingInterceptor.Level.NONE)
@@ -87,11 +88,22 @@ class TimberHttpLoggingInterceptorTest {
     @Test
     fun testLog_givenNone_whenRequestsGet_thenLogsNothing() {
         setLevel(HttpLoggingInterceptor.Level.NONE)
+        // get with empty response
         serverRule.server.enqueue(MockResponse())
         client.newCall(request().build()).execute().closeQuietly()
+
+        // post with plain response
+        serverRule.server.enqueue(
+            MockResponse()
+                .setBody("Hello!")
+                .setHeader("Content-Type", PLAIN),
+        )
+        client.newCall(request().post("Hi?".toRequestBody(PLAIN)).build()).execute().closeQuietly()
         record.assertNoMoreLogs()
     }
+    // endregion
 
+    // region: level basic
     @Test
     fun testLog_givenBasic_whenRequestsGet_thenLogsMethod() {
         setLevel(HttpLoggingInterceptor.Level.BASIC)
@@ -143,7 +155,9 @@ class TimberHttpLoggingInterceptorTest {
             .assertLogMatch("""<-- 200 OK $url \(\d+ms, unknown-length body\)""")
             .assertNoMoreLogs()
     }
+    // endregion
 
+    // region: level headers
     @Test
     fun testLog_givenHeader_whenRequestsGet_thenLogsHeaders() {
         setLevel(HttpLoggingInterceptor.Level.HEADERS)
@@ -272,6 +286,27 @@ class TimberHttpLoggingInterceptorTest {
             .assertLogEqual("<-- END HTTP")
             .assertNoMoreLogs()
     }
+    // endregion
+
+    @Test
+    fun testLog_givenBody_whenRequestsPost_thenLogsBody() {
+        setLevel(HttpLoggingInterceptor.Level.BODY)
+        serverRule.server.enqueue(MockResponse())
+        client.newCall(request().post("Hi?".toRequestBody(PLAIN)).build()).execute().closeQuietly()
+        record
+            .assertLogEqual("--> POST $url http/1.1")
+            .assertLogEqual("Content-Type: text/plain; charset=utf-8")
+            .assertLogEqual("Content-Length: 3")
+            .assertLogEqual("Host: $host")
+            .assertLogEqual("Connection: Keep-Alive")
+            .assertLogEqual("Accept-Encoding: gzip")
+            .assertLogMatch("""User-Agent: okhttp/.+""")
+            .assertLogEqual("\nHi?\n--> END POST (3-byte body)\n")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms\)""")
+            .assertLogEqual("Content-Length: 0")
+            .assertLogEqual("<-- END HTTP (0-byte body)\n")
+            .assertNoMoreLogs()
+    }
 
     private class RecordingTree : Timber.Tree() {
         private val _logs = mutableListOf<LogData>()
@@ -293,11 +328,14 @@ class TimberHttpLoggingInterceptorTest {
 
         fun assertLogMatch(regex: String) = apply {
             assertThat(index).isLessThan(logs.size)
-            assertThat(logs).index(index++)
+            assertThat(logs)
+                .index(index++)
                 .prop(LogData::message)
-                .given { value ->
-                    if (!value.matches(Regex(regex))) {
-                        fail(regex, value)
+                .run {
+                    given { value ->
+                        if (!value.matches(Regex(regex))) {
+                            fail(regex, value)
+                        }
                     }
                 }
         }
