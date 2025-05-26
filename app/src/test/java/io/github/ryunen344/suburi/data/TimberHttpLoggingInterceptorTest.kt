@@ -288,6 +288,7 @@ class TimberHttpLoggingInterceptorTest {
     }
     // endregion
 
+    // region: level body
     @Test
     fun testLog_givenBody_whenRequestsPost_thenLogsBody() {
         setLevel(HttpLoggingInterceptor.Level.BODY)
@@ -312,6 +313,7 @@ class TimberHttpLoggingInterceptorTest {
             .assertLogEqual("\nHello!\n<-- END HTTP (6-byte body)\n")
             .assertNoMoreLogs()
     }
+    // endregion
 
     private class RecordingTree : Timber.Tree() {
         private val _logs = mutableListOf<LogData>()
