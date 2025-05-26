@@ -35,9 +35,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.ComposeNavigator
 import androidx.navigation.compose.ComposeNavigatorDestinationBuilder
 import androidx.navigation.get
-import androidx.navigation.internalToRoute
 import androidx.navigation.navDeepLink
 import androidx.navigation.serialization.decodeArguments
+import androidx.navigation.toRoute
 import io.github.ryunen344.suburi.navigation.ParcelableNavTypeMap
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.KSerializer
@@ -191,9 +191,8 @@ fun NavGraphBuilder.routes(
     )
 }
 
-@Suppress("RestrictedApi")
 inline fun <reified T : Routes> SavedStateHandle.toRoutes(): T {
-    return internalToRoute(T::class, T::class.typeMap)
+    return toRoute<T>(T::class.typeMap)
 }
 
 @Suppress("RestrictedApi")
