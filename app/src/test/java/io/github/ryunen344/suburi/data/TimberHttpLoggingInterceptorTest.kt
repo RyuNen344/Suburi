@@ -41,6 +41,7 @@ import okhttp3.ResponseBody
 import okhttp3.internal.closeQuietly
 import okhttp3.logging.HttpLoggingInterceptor
 import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.RecordedRequest
 import okio.Buffer
 import okio.BufferedSink
 import okio.ByteString.Companion.decodeBase64
@@ -382,6 +383,79 @@ class TimberHttpLoggingInterceptorTest {
     }
 
     @Test
+    fun testLog_givenBody_whenRequestIsOneShot_thenLogsBody() {
+        setLevel(HttpLoggingInterceptor.Level.BODY)
+        serverRule.server.enqueue(
+            MockResponse()
+                .setBody("Hello!")
+                .setHeader("Content-Type", PLAIN),
+        )
+        val buffer = Buffer().apply {
+            writeUtf8CodePoint(0x89)
+            writeUtf8CodePoint(0x50)
+            writeUtf8CodePoint(0x4e)
+            writeUtf8CodePoint(0x47)
+            writeUtf8CodePoint(0x0d)
+            writeUtf8CodePoint(0x0a)
+            writeUtf8CodePoint(0x1a)
+            writeUtf8CodePoint(0x0a)
+        }
+        val request = request()
+            .post(
+                object : RequestBody() {
+                    override fun contentType(): MediaType? = "image/png; charset=utf-8".toMediaType()
+
+                    override fun contentLength(): Long = 9
+
+                    @Throws(IOException::class)
+                    override fun writeTo(sink: BufferedSink) {
+                        sink.writeAll(buffer)
+                    }
+
+                    override fun isOneShot(): Boolean = true
+                },
+            )
+            .build()
+        val response = client.newCall(request).execute()
+
+        assertThat(serverRule.server.takeRequest())
+            .prop(RecordedRequest::body)
+            .isEqualTo(
+                Buffer().apply {
+                    writeUtf8CodePoint(0x89)
+                    writeUtf8CodePoint(0x50)
+                    writeUtf8CodePoint(0x4e)
+                    writeUtf8CodePoint(0x47)
+                    writeUtf8CodePoint(0x0d)
+                    writeUtf8CodePoint(0x0a)
+                    writeUtf8CodePoint(0x1a)
+                    writeUtf8CodePoint(0x0a)
+                },
+            )
+
+        assertThat(response.body)
+            .isNotNull()
+            .transform(name = "string", transform = ResponseBody::string)
+            .isEqualTo("Hello!")
+        response.closeQuietly()
+
+        record
+            .assertLogEqual("--> POST $url http/1.1")
+            .assertLogEqual("Content-Type: image/png; charset=utf-8")
+            .assertLogEqual("Content-Length: 9")
+            .assertLogEqual("Host: $host")
+            .assertLogEqual("Connection: Keep-Alive")
+            .assertLogEqual("Accept-Encoding: gzip")
+            .assertLogMatch("""User-Agent: okhttp/.+""")
+            .assertLogEqual("\n--> END POST (binary 9-byte body omitted)\n")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms\)""")
+            .assertLogEqual("Content-Length: 6")
+            .assertLogEqual("Content-Type: text/plain; charset=utf-8")
+            .assertLogMatch("""\nHello!\n<-- END HTTP \(\d+ms, 6-byte body\)\n""")
+            .assertNoMoreLogs()
+    }
+
+    @Test
     fun testLog_givenBody_whenResponseHasChunkedBody_thenLogsBody() {
         setLevel(HttpLoggingInterceptor.Level.BODY)
         serverRule.server.enqueue(
@@ -548,15 +622,16 @@ class TimberHttpLoggingInterceptorTest {
     @Test
     fun testLog_givenBody_whenResponseIsBinary_thenLogsBody() {
         setLevel(HttpLoggingInterceptor.Level.BODY)
-        val buffer = Buffer()
-        buffer.writeUtf8CodePoint(0x89)
-        buffer.writeUtf8CodePoint(0x50)
-        buffer.writeUtf8CodePoint(0x4e)
-        buffer.writeUtf8CodePoint(0x47)
-        buffer.writeUtf8CodePoint(0x0d)
-        buffer.writeUtf8CodePoint(0x0a)
-        buffer.writeUtf8CodePoint(0x1a)
-        buffer.writeUtf8CodePoint(0x0a)
+        val buffer = Buffer().apply {
+            writeUtf8CodePoint(0x89)
+            writeUtf8CodePoint(0x50)
+            writeUtf8CodePoint(0x4e)
+            writeUtf8CodePoint(0x47)
+            writeUtf8CodePoint(0x0d)
+            writeUtf8CodePoint(0x0a)
+            writeUtf8CodePoint(0x1a)
+            writeUtf8CodePoint(0x0a)
+        }
         serverRule.server.enqueue(
             MockResponse()
                 .setBody(buffer)
