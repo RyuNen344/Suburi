@@ -20,28 +20,41 @@
 package io.github.ryunen344.suburi.data
 
 import android.util.Log
+import assertk.assertFailure
 import assertk.assertThat
 import assertk.assertions.index
 import assertk.assertions.isEqualTo
 import assertk.assertions.isLessThan
+import assertk.assertions.isNotNull
 import assertk.assertions.prop
 import assertk.assertions.support.fail
 import io.github.ryunen344.suburi.test.rules.MockWebServerRule
+import okhttp3.Dns
 import okhttp3.HttpUrl
+import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.ResponseBody
 import okhttp3.internal.closeQuietly
 import okhttp3.logging.HttpLoggingInterceptor
 import okhttp3.mockwebserver.MockResponse
+import okio.Buffer
 import okio.BufferedSink
+import okio.ByteString.Companion.decodeBase64
+import okio.ByteString.Companion.decodeHex
+import okio.GzipSink
+import okio.IOException
+import okio.buffer
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import timber.log.Timber
+import java.net.InetAddress
+import java.net.UnknownHostException
 
 class TimberHttpLoggingInterceptorTest {
 
@@ -297,7 +310,12 @@ class TimberHttpLoggingInterceptorTest {
                 .setBody("Hello!")
                 .setHeader("Content-Type", PLAIN),
         )
-        client.newCall(request().post("Hi?".toRequestBody(PLAIN)).build()).execute().closeQuietly()
+        val response = client.newCall(request().post("Hi?".toRequestBody(PLAIN)).build()).execute()
+        assertThat(response.body)
+            .isNotNull()
+            .transform(name = "string", transform = ResponseBody::string)
+            .isEqualTo("Hello!")
+        response.closeQuietly()
         record
             .assertLogEqual("--> POST $url http/1.1")
             .assertLogEqual("Content-Type: text/plain; charset=utf-8")
@@ -310,10 +328,306 @@ class TimberHttpLoggingInterceptorTest {
             .assertLogMatch("""<-- 200 OK $url \(\d+ms\)""")
             .assertLogEqual("Content-Length: 6")
             .assertLogEqual("Content-Type: text/plain; charset=utf-8")
-            .assertLogEqual("\nHello!\n<-- END HTTP (6-byte body)\n")
+            .assertLogMatch("""\nHello!\n<-- END HTTP \(\d+ms, 6-byte body\)\n""")
+            .assertNoMoreLogs()
+    }
+
+    @Test
+    fun testLog_givenBody_whenRequestHasBinary_thenLogsBody() {
+        setLevel(HttpLoggingInterceptor.Level.BODY)
+        serverRule.server.enqueue(
+            MockResponse()
+                .setBody("Hello!")
+                .setHeader("Content-Type", PLAIN),
+        )
+
+        val buffer = Buffer()
+        buffer.writeUtf8CodePoint(0x89)
+        buffer.writeUtf8CodePoint(0x50)
+        buffer.writeUtf8CodePoint(0x4e)
+        buffer.writeUtf8CodePoint(0x47)
+        buffer.writeUtf8CodePoint(0x0d)
+        buffer.writeUtf8CodePoint(0x0a)
+        buffer.writeUtf8CodePoint(0x1a)
+        buffer.writeUtf8CodePoint(0x0a)
+
+        val response = client.newCall(
+            request()
+                .post(
+                    buffer
+                        .readByteString()
+                        .toRequestBody("image/png; charset=utf-8".toMediaType()),
+                )
+                .build(),
+        ).execute()
+        assertThat(response.body)
+            .isNotNull()
+            .transform(name = "string", transform = ResponseBody::string)
+            .isEqualTo("Hello!")
+        response.closeQuietly()
+        record
+            .assertLogEqual("--> POST $url http/1.1")
+            .assertLogEqual("Content-Type: image/png; charset=utf-8")
+            .assertLogEqual("Content-Length: 9")
+            .assertLogEqual("Host: $host")
+            .assertLogEqual("Connection: Keep-Alive")
+            .assertLogEqual("Accept-Encoding: gzip")
+            .assertLogMatch("""User-Agent: okhttp/.+""")
+            .assertLogEqual("\n--> END POST (binary 9-byte body omitted)\n")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms\)""")
+            .assertLogEqual("Content-Length: 6")
+            .assertLogEqual("Content-Type: text/plain; charset=utf-8")
+            .assertLogMatch("""\nHello!\n<-- END HTTP \(\d+ms, 6-byte body\)\n""")
+            .assertNoMoreLogs()
+    }
+
+    @Test
+    fun testLog_givenBody_whenResponseHasChunkedBody_thenLogsBody() {
+        setLevel(HttpLoggingInterceptor.Level.BODY)
+        serverRule.server.enqueue(
+            MockResponse()
+                .setChunkedBody("Hello!", 2)
+                .setHeader("Content-Type", PLAIN),
+        )
+        val response = client.newCall(request().build()).execute()
+        assertThat(response.body)
+            .isNotNull()
+            .transform(name = "string", transform = ResponseBody::string)
+            .isEqualTo("Hello!")
+        response.closeQuietly()
+        record
+            .assertLogEqual("--> GET $url http/1.1")
+            .assertLogEqual("Host: $host")
+            .assertLogEqual("Connection: Keep-Alive")
+            .assertLogEqual("Accept-Encoding: gzip")
+            .assertLogMatch("""User-Agent: okhttp/.+""")
+            .assertLogEqual("--> END GET")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms\)""")
+            .assertLogEqual("Transfer-encoding: chunked")
+            .assertLogEqual("Content-Type: text/plain; charset=utf-8")
+            .assertLogMatch("""\nHello!\n<-- END HTTP \(\d+ms, 6-byte body\)\n""")
+            .assertNoMoreLogs()
+    }
+
+    @Test
+    fun testLog_givenBody_whenRequestsGzipPost_thenLogsBody() {
+        setLevel(HttpLoggingInterceptor.Level.BODY)
+        serverRule.server.enqueue(
+            MockResponse()
+                .setBody(Buffer().writeUtf8("Uncompressed"))
+                .setHeader("Content-Type", PLAIN),
+        )
+        val request = request()
+            .addHeader("Content-Encoding", "gzip")
+            .post("GZIP Uncompressed".toRequestBody().gzip())
+            .build()
+        val response = client.newCall(request).execute()
+        assertThat(response.body)
+            .isNotNull()
+            .transform(name = "string", transform = ResponseBody::string)
+            .isEqualTo("Uncompressed")
+        response.closeQuietly()
+        record
+            .assertLogEqual("--> POST $url http/1.1")
+            .assertLogEqual("Content-Encoding: gzip")
+            .assertLogEqual("Transfer-Encoding: chunked")
+            .assertLogEqual("Host: $host")
+            .assertLogEqual("Connection: Keep-Alive")
+            .assertLogEqual("Accept-Encoding: gzip")
+            .assertLogMatch("""User-Agent: okhttp/.+""")
+            .assertLogEqual("\n--> END POST (17-byte, 37-gzipped-byte body)\n")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms\)""")
+            .assertLogEqual("Content-Length: 12")
+            .assertLogEqual("Content-Type: text/plain; charset=utf-8")
+            .assertLogMatch("""\nUncompressed\n<-- END HTTP \(\d+ms, 12-byte body\)\n""")
+            .assertNoMoreLogs()
+    }
+
+    @Test
+    fun testLog_givenBody_whenResponseHasGzip_thenLogsBody() {
+        setLevel(HttpLoggingInterceptor.Level.BODY)
+        serverRule.server.enqueue(
+            MockResponse()
+                .setBody(Buffer().write(requireNotNull("H4sIAAAAAAAAAPNIzcnJ11HwQKIAdyO+9hMAAAA=".decodeBase64())))
+                .setHeader("Content-Encoding", "gzip")
+                .setHeader("Content-Type", PLAIN),
+        )
+        val response = client.newCall(request().build()).execute()
+        assertThat(response.body)
+            .isNotNull()
+            .transform(name = "string", transform = ResponseBody::string)
+            .isEqualTo("Hello, Hello, Hello")
+        response.closeQuietly()
+        record
+            .assertLogEqual("--> GET $url http/1.1")
+            .assertLogEqual("Host: $host")
+            .assertLogEqual("Connection: Keep-Alive")
+            .assertLogEqual("Accept-Encoding: gzip")
+            .assertLogMatch("""User-Agent: okhttp/.+""")
+            .assertLogEqual("--> END GET")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms\)""")
+            .assertLogEqual("Content-Length: 29")
+            .assertLogEqual("Content-Encoding: gzip")
+            .assertLogEqual("Content-Type: text/plain; charset=utf-8")
+            .assertLogMatch("""\nHello, Hello, Hello\n<-- END HTTP \(\d+ms, 19-byte, 29-gzipped-byte body\)\n""")
+            .assertNoMoreLogs()
+    }
+
+    @Test
+    fun testLog_givenBody_whenResponseHasUnknownEncoded_thenLogsBody() {
+        setLevel(HttpLoggingInterceptor.Level.BODY)
+        serverRule.server.enqueue(
+            MockResponse()
+                .setBody(Buffer().write(requireNotNull("iwmASGVsbG8sIEhlbGxvLCBIZWxsbwoD".decodeBase64())))
+                .setHeader("Content-Encoding", "br")
+                .setHeader("Content-Type", PLAIN),
+        )
+        val response = client.newCall(request().build()).execute()
+        assertThat(response.body)
+            .isNotNull()
+            .transform(name = "string", transform = ResponseBody::byteString)
+            .isEqualTo("8b098048656c6c6f2c2048656c6c6f2c2048656c6c6f0a03".decodeHex())
+        response.closeQuietly()
+        record
+            .assertLogEqual("--> GET $url http/1.1")
+            .assertLogEqual("Host: $host")
+            .assertLogEqual("Connection: Keep-Alive")
+            .assertLogEqual("Accept-Encoding: gzip")
+            .assertLogMatch("""User-Agent: okhttp/.+""")
+            .assertLogEqual("--> END GET")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms\)""")
+            .assertLogEqual("Content-Length: 24")
+            .assertLogEqual("Content-Encoding: br")
+            .assertLogEqual("Content-Type: text/plain; charset=utf-8")
+            .assertLogEqual("<-- END HTTP (encoded body omitted)")
+            .assertNoMoreLogs()
+    }
+
+    @Test
+    fun testLog_givenBody_whenResponseIsStreaming_thenLogsBody() {
+        setLevel(HttpLoggingInterceptor.Level.BODY)
+        serverRule.server.enqueue(
+            MockResponse()
+                .setChunkedBody(
+                    """
+                    |event: add
+                    |data: 73857293
+                    |
+                    |event: remove
+                    |data: 2153
+                    |
+                    |event: add
+                    |data: 113411
+                    |
+                    |
+                    """.trimMargin(),
+                    8,
+                )
+                .setHeader("Content-Type", "text/event-stream"),
+        )
+        val response = client.newCall(request().build()).execute()
+        assertThat(response.body)
+            .isNotNull()
+            .transform(name = "string", transform = ResponseBody::string)
+            .isEqualTo("event: add\ndata: 73857293\n\nevent: remove\ndata: 2153\n\nevent: add\ndata: 113411\n\n")
+        response.closeQuietly()
+        record
+            .assertLogEqual("--> GET $url http/1.1")
+            .assertLogEqual("Host: $host")
+            .assertLogEqual("Connection: Keep-Alive")
+            .assertLogEqual("Accept-Encoding: gzip")
+            .assertLogMatch("""User-Agent: okhttp/.+""")
+            .assertLogEqual("--> END GET")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms\)""")
+            .assertLogEqual("Transfer-encoding: chunked")
+            .assertLogEqual("Content-Type: text/event-stream")
+            .assertLogEqual("<-- END HTTP (streaming)")
+            .assertNoMoreLogs()
+    }
+
+    @Test
+    fun testLog_givenBody_whenResponseIsBinary_thenLogsBody() {
+        setLevel(HttpLoggingInterceptor.Level.BODY)
+        val buffer = Buffer()
+        buffer.writeUtf8CodePoint(0x89)
+        buffer.writeUtf8CodePoint(0x50)
+        buffer.writeUtf8CodePoint(0x4e)
+        buffer.writeUtf8CodePoint(0x47)
+        buffer.writeUtf8CodePoint(0x0d)
+        buffer.writeUtf8CodePoint(0x0a)
+        buffer.writeUtf8CodePoint(0x1a)
+        buffer.writeUtf8CodePoint(0x0a)
+        serverRule.server.enqueue(
+            MockResponse()
+                .setBody(buffer)
+                .setHeader("Content-Type", "image/png; charset=utf-8"),
+        )
+        val response = client.newCall(request().build()).execute()
+        assertThat(response.body)
+            .isNotNull()
+            .transform(name = "string", transform = ResponseBody::byteString)
+            .isEqualTo("c289504e470d0a1a0a".decodeHex())
+        response.closeQuietly()
+        record
+            .assertLogEqual("--> GET $url http/1.1")
+            .assertLogEqual("Host: $host")
+            .assertLogEqual("Connection: Keep-Alive")
+            .assertLogEqual("Accept-Encoding: gzip")
+            .assertLogMatch("""User-Agent: okhttp/.+""")
+            .assertLogEqual("--> END GET")
+            .assertLogMatch("""<-- 200 OK $url \(\d+ms\)""")
+            .assertLogEqual("Content-Length: 9")
+            .assertLogEqual("Content-Type: image/png; charset=utf-8")
+            .assertLogMatch("""\n<-- END HTTP \(\d+ms, binary 9-byte body omitted\)\n""")
             .assertNoMoreLogs()
     }
     // endregion
+
+    @Test
+    fun testLog_whenThrowsException_thenLogsFailure() {
+        setLevel(HttpLoggingInterceptor.Level.BODY)
+        val exception = UnknownHostException("emulate DNS failure $host")
+        assertFailure {
+            client
+                .newBuilder().apply {
+                    networkInterceptors().clear()
+                    addInterceptor(interceptor)
+                }
+                .dns(
+                    object : Dns {
+                        override fun lookup(hostname: String): List<InetAddress> {
+                            throw exception
+                        }
+                    },
+                )
+                .build()
+                .newCall(request().build())
+                .execute()
+                .closeQuietly()
+        }.isEqualTo(exception)
+        record
+            .assertLogEqual("--> GET $url")
+            .assertLogEqual("--> END GET")
+            .assertLogEqual("<-- HTTP FAILED: java.net.UnknownHostException: emulate DNS failure $host")
+            .assertNoMoreLogs()
+    }
+
+    private fun RequestBody.gzip(): RequestBody {
+        return object : RequestBody() {
+            override fun contentType(): MediaType? = this@gzip.contentType()
+
+            override fun contentLength(): Long {
+                return -1 // We don't know the compressed length in advance!
+            }
+
+            @Throws(IOException::class)
+            override fun writeTo(sink: BufferedSink) {
+                GzipSink(sink).buffer().use(this@gzip::writeTo)
+            }
+
+            override fun isOneShot(): Boolean = this@gzip.isOneShot()
+        }
+    }
 
     private class RecordingTree : Timber.Tree() {
         private val _logs = mutableListOf<LogData>()

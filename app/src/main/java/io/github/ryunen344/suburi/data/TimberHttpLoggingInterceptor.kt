@@ -20,6 +20,7 @@
 package io.github.ryunen344.suburi.data
 
 import android.util.Log
+import io.github.ryunen344.suburi.util.isProbablyUtf8
 import okhttp3.Headers
 import okhttp3.Interceptor
 import okhttp3.RequestBody
@@ -31,7 +32,6 @@ import okhttp3.logging.HttpLoggingInterceptor.Level
 import okio.Buffer
 import okio.GzipSource
 import timber.log.Timber
-import java.io.EOFException
 import java.io.IOException
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
@@ -82,7 +82,7 @@ class TimberHttpLoggingInterceptor(
     /**
      * see [HttpLoggingInterceptor.intercept]
      */
-    @Suppress("NestedBlockDepth", "CyclomaticComplexMethod")
+    @Suppress("LongMethod", "NestedBlockDepth", "CyclomaticComplexMethod")
     @Throws(IOException::class)
     override fun intercept(chain: Interceptor.Chain): Response {
         val level = this.level
@@ -135,16 +135,29 @@ class TimberHttpLoggingInterceptor(
                 requestBody.isDuplex() -> "--> END ${original.method} (duplex request body omitted)"
 
                 else -> buildString {
-                    val buffer = Buffer()
+                    var buffer = Buffer()
                     appendLine("")
                     requestBody.writeTo(buffer)
+
+                    var gzippedLength: Long? = null
+                    if ("gzip".equals(headers["Content-Encoding"], ignoreCase = true)) {
+                        gzippedLength = buffer.size
+                        GzipSource(buffer).use { gzippedResponseBody ->
+                            buffer = Buffer()
+                            buffer.writeAll(gzippedResponseBody)
+                        }
+                    }
                     val contentType = requestBody.contentType()
-                    if (buffer.isProbablyUtf8()) {
-                        val charset = contentType?.charset(StandardCharsets.UTF_8) ?: StandardCharsets.UTF_8
-                        appendLine(buffer.peek().readString(charset))
-                        appendLine("--> END ${original.method} (${requestBody.contentLength()}-byte body)")
-                    } else {
+                    if (!buffer.isProbablyUtf8()) {
                         appendLine("--> END ${original.method} (binary ${requestBody.contentLength()}-byte body omitted)")
+                    } else {
+                        if (gzippedLength != null) {
+                            appendLine("--> END ${original.method} (${buffer.size}-byte, $gzippedLength-gzipped-byte body)")
+                        } else {
+                            val charset = contentType?.charset(StandardCharsets.UTF_8) ?: StandardCharsets.UTF_8
+                            appendLine(buffer.clone().readString(charset))
+                            appendLine("--> END ${original.method} (${buffer.size}-byte body)")
+                        }
                     }
                     peekBody = buffer.readByteArray().toRequestBody(contentType)
                     buffer.clear()
@@ -197,9 +210,14 @@ class TimberHttpLoggingInterceptor(
 
                 bodyHasUnknownEncoding(response.headers) -> "<-- END HTTP (encoded body omitted)"
 
+                bodyIsStreaming(response) -> "<-- END HTTP (streaming)"
+
                 else -> {
                     val source = responseBody.source()
                     source.request(Long.MAX_VALUE) // Buffer the entire body.
+
+                    val totalMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs)
+
                     var buffer = source.buffer
 
                     var gzippedLength: Long? = null
@@ -217,7 +235,7 @@ class TimberHttpLoggingInterceptor(
                     buildString {
                         if (!buffer.isProbablyUtf8()) {
                             appendLine("")
-                            appendLine("<-- END HTTP (binary ${buffer.size}-byte body omitted)")
+                            appendLine("<-- END HTTP (${totalMs}ms, binary ${buffer.size}-byte body omitted)")
                         } else {
                             if (contentLength != 0L) {
                                 appendLine("")
@@ -225,9 +243,9 @@ class TimberHttpLoggingInterceptor(
                             }
 
                             if (gzippedLength != null) {
-                                appendLine("<-- END HTTP (${buffer.size}-byte, $gzippedLength-gzipped-byte body)")
+                                appendLine("<-- END HTTP (${totalMs}ms, ${buffer.size}-byte, $gzippedLength-gzipped-byte body)")
                             } else {
-                                appendLine("<-- END HTTP (${buffer.size}-byte body)")
+                                appendLine("<-- END HTTP (${totalMs}ms, ${buffer.size}-byte body)")
                             }
                         }
                     }
@@ -250,24 +268,8 @@ class TimberHttpLoggingInterceptor(
             !contentEncoding.equals("gzip", ignoreCase = true)
     }
 
-    @Suppress("ReturnCount")
-    private fun Buffer.isProbablyUtf8(): Boolean {
-        try {
-            val prefix = Buffer()
-            val byteCount = size.coerceAtMost(@Suppress("MagicNumber") 64)
-            copyTo(prefix, 0, byteCount)
-            for (i in 0 until Char.SIZE_BITS) {
-                if (prefix.exhausted()) {
-                    break
-                }
-                val codePoint = prefix.readUtf8CodePoint()
-                if (Character.isISOControl(codePoint) && !Character.isWhitespace(codePoint)) {
-                    return false
-                }
-            }
-            return true
-        } catch (_: EOFException) {
-            return false // Truncated UTF-8 sequence.
-        }
+    private fun bodyIsStreaming(response: Response): Boolean {
+        val contentType = response.body?.contentType()
+        return contentType != null && contentType.type == "text" && contentType.subtype == "event-stream"
     }
 }
