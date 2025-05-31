@@ -28,7 +28,7 @@ import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.callid.CallId
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.resources.Resources
-import io.ktor.serialization.kotlinx.json.json
+import io.ktor.http.ContentType
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import javax.inject.Singleton
@@ -48,7 +48,7 @@ class HttpClientModule {
             }
             install(CallId)
             install(ContentNegotiation) {
-                json(json.get())
+                register(ContentType.Application.Json, OkioJsonConverter(json.get()))
             }
             install(Resources)
             expectSuccess = true

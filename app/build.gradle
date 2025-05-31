@@ -245,6 +245,8 @@ dependencies {
     implementation libs.org.jetbrains.kotlinx.atomicfu
     implementation libs.org.jetbrains.kotlinx.coroutine.android
     implementation libs.org.jetbrains.kotlinx.serialization.core
+    implementation libs.org.jetbrains.kotlinx.serialization.json
+    implementation libs.org.jetbrains.kotlinx.serialization.json.okio
     implementation libs.timber
 
     // test

@@ -39,7 +39,7 @@ class OkHttpModule {
         return OkHttpClient.Builder()
             .eventListener(TrafficStatsEventListener())
             .addNetworkInterceptor(
-                HttpLoggingInterceptor(TimberHttpLoggingInterceptorLogger()).apply {
+                TimberHttpLoggingInterceptor().apply {
                     level = HttpLoggingInterceptor.Level.BODY
                 },
             )
