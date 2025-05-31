@@ -80,6 +80,9 @@ sealed class Routes {
 
     @Serializable
     data class Uuid(val uuid: WrappedUuid) : Routes()
+
+    @Serializable
+    data object WebView : Routes()
 }
 
 inline val <reified T : Routes> KClass<T>.typeMap: Map<KType, @JvmSuppressWildcards NavType<*>>
@@ -89,6 +92,7 @@ inline val <reified T : Routes> KClass<T>.typeMap: Map<KType, @JvmSuppressWildca
         Routes.Structures::class -> ParcelableNavTypeMap<Structure>()
         Routes.Top::class -> emptyMap()
         Routes.Uuid::class -> ParcelableNavTypeMap<WrappedUuid>(onParseValue = onWrappedUuidParse)
+        Routes.WebView::class -> emptyMap()
         else -> error("unexpected type parameter")
     }
 
@@ -104,6 +108,7 @@ val <T : Routes> KClass<T>.deepLinks: List<NavDeepLink>
                 typeMap = ParcelableNavTypeMap<WrappedUuid>(onParseValue = onWrappedUuidParse),
             ),
         )
+        Routes.WebView::class -> emptyList()
 
         else -> error("unexpected type parameter")
     }

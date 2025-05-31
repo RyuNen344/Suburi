@@ -44,8 +44,9 @@ import io.github.ryunen344.suburi.ui.theme.SuburiTheme
 internal fun TopScreen(
     onClickCube: () -> Unit,
     onClickMutton: () -> Unit,
-    onClickUuid: () -> Unit,
     onClickStructure: () -> Unit,
+    onClickUuid: () -> Unit,
+    onClickWebView: () -> Unit,
 ) {
     val imageLoader = LocalImageLoader.current
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -65,11 +66,14 @@ internal fun TopScreen(
             Button(onClickMutton) {
                 Text("navigate mutton")
             }
+            Button(onClickStructure) {
+                Text("navigate structure")
+            }
             Button(onClickUuid) {
                 Text("navigate uuid")
             }
-            Button(onClickStructure) {
-                Text("navigate structure")
+            Button(onClickWebView) {
+                Text("navigate webview")
             }
 
             AsyncImage(
@@ -140,8 +144,9 @@ private fun TopScreenPreview() {
             TopScreen(
                 onClickCube = {},
                 onClickMutton = {},
-                onClickUuid = {},
                 onClickStructure = {},
+                onClickUuid = {},
+                onClickWebView = {},
             )
         }
     }
