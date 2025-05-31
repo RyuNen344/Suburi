@@ -38,6 +38,7 @@ import coil3.ImageLoader
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.ryunen344.suburi.coil.LocalImageLoader
 import io.github.ryunen344.suburi.ui.screen.Routes
+import io.github.ryunen344.suburi.ui.screen.Structure
 import io.github.ryunen344.suburi.ui.screen.WrappedUuid
 import io.github.ryunen344.suburi.ui.screen.cube.CubeScreen
 import io.github.ryunen344.suburi.ui.screen.mutton.MuttonScreen
@@ -46,6 +47,7 @@ import io.github.ryunen344.suburi.ui.screen.structure.StructureScreen
 import io.github.ryunen344.suburi.ui.screen.toRoutes
 import io.github.ryunen344.suburi.ui.screen.top.TopScreen
 import io.github.ryunen344.suburi.ui.screen.uuid.UuidScreen
+import io.github.ryunen344.suburi.ui.screen.webview.WebViewScreen
 import io.github.ryunen344.suburi.ui.theme.SuburiTheme
 import io.github.ryunen344.suburi.util.coroutines.DefaultDispatcher
 import io.github.ryunen344.suburi.util.coroutines.IoDispatcher
@@ -59,12 +61,16 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
+import okhttp3.OkHttpClient
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var okHttpClient: dagger.Lazy<OkHttpClient>
 
     @Inject
     lateinit var httpClient: dagger.Lazy<HttpClient>
@@ -118,14 +124,22 @@ class MainActivity : AppCompatActivity() {
                                 onClickMutton = {
                                     navController.navigate(Routes.Mutton)
                                 },
+                                onClickStructure = {
+                                    navController.navigate(Routes.Structures(Structure.random()))
+                                },
                                 onClickUuid = {
                                     navController.navigate(Routes.Uuid(WrappedUuid(UUID.randomUUID())))
                                 },
-                                onClickStructure = ::request,
+                                onClickWebView = {
+                                    navController.navigate(Routes.WebView)
+                                },
                             )
                         }
                         routes<Routes.Uuid> {
                             UuidScreen(uuid = it.toRoutes<Routes.Uuid>().uuid)
+                        }
+                        routes<Routes.WebView> {
+                            WebViewScreen(okHttpClient.get())
                         }
                     }
                 }
@@ -133,6 +147,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @Suppress("unused")
     private fun request() {
         lifecycleScope.async(defaultDispatcher.get()) {
             runCatching {
