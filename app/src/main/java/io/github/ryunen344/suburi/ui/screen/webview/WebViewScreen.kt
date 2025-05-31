@@ -61,7 +61,7 @@ internal fun WebViewScreen(
         okHttpClient.newBuilder()
             .cookieJar(
                 object : CookieJar {
-                    private val store: MutableMap<HttpUrl, List<Cookie>> = mutableMapOf()
+                    private val store: ConcurrentHashMap<HttpUrl, List<Cookie>> = ConcurrentHashMap()
 
                     override fun loadForRequest(url: HttpUrl): List<Cookie> {
                         return store.getOrDefault(url, emptyList())
