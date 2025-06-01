@@ -40,15 +40,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.webkit.ServiceWorkerClientCompat
+import androidx.webkit.ServiceWorkerControllerCompat
 import androidx.webkit.WebResourceErrorCompat
 import androidx.webkit.WebViewClientCompat
+import androidx.webkit.WebViewFeature
 import okhttp3.Cache
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.Headers.Companion.toHeaders
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.internal.http.HttpMethod
 import okio.FileSystem
 import timber.log.Timber
 import java.nio.charset.StandardCharsets
@@ -111,22 +117,74 @@ internal fun WebViewScreen(
                     settings.javaScriptCanOpenWindowsAutomatically = false
                     savedState?.let(::restoreState)
                     savedView = this
+
+                    if (WebViewFeature.isFeatureSupported(WebViewFeature.SERVICE_WORKER_BASIC_USAGE)) {
+                        val swController = ServiceWorkerControllerCompat.getInstance()
+                        swController.setServiceWorkerClient(
+                            object : ServiceWorkerClientCompat() {
+                                override fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? {
+                                    val url = request.url.toString().toHttpUrlOrNull()
+                                    return if (url != null) {
+                                        val response = cachedOkHttpClient.newCall(
+                                            Request.Builder()
+                                                .method(
+                                                    method = request.method,
+                                                    body = if (HttpMethod.permitsRequestBody(request.method)) {
+                                                        "".toRequestBody()
+                                                    } else {
+                                                        null
+                                                    },
+                                                )
+                                                .url(url)
+                                                .headers(request.requestHeaders.toHeaders())
+                                                .build(),
+                                        ).execute()
+                                        val contentType = response.body?.contentType()
+                                        val charset = contentType?.charset(StandardCharsets.UTF_8) ?: StandardCharsets.UTF_8
+                                        WebResourceResponse(
+                                            response.body?.contentType()?.let { "${it.type}/${it.subtype}" } ?: "text/plain",
+                                            charset.name(),
+                                            response.body?.byteStream(),
+                                        )
+                                    } else {
+                                        null
+                                    }
+                                }
+                            },
+                        )
+                        with(swController.serviceWorkerWebSettings) {
+                            // do stuff
+                        }
+                    }
+
                     webViewClient = object : WebViewClientCompat() {
-                        override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse {
-                            val url = request.url.toString()
-                            val response = cachedOkHttpClient.newCall(
-                                Request.Builder()
-                                    .url(url)
-                                    .headers(request.requestHeaders.toHeaders())
-                                    .build(),
-                            ).execute()
-                            val contentType = response.body?.contentType()
-                            val charset = contentType?.charset(StandardCharsets.UTF_8) ?: StandardCharsets.UTF_8
-                            return WebResourceResponse(
-                                response.body?.contentType()?.let { "${it.type}/${it.subtype}" } ?: "text/plain",
-                                charset.name(),
-                                response.body?.byteStream(),
-                            )
+                        override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
+                            val url = request.url.toString().toHttpUrlOrNull()
+                            return if (url != null) {
+                                val response = cachedOkHttpClient.newCall(
+                                    Request.Builder()
+                                        .url(url)
+                                        .method(
+                                            method = request.method,
+                                            body = if (HttpMethod.permitsRequestBody(request.method)) {
+                                                "".toRequestBody()
+                                            } else {
+                                                null
+                                            },
+                                        )
+                                        .headers(request.requestHeaders.toHeaders())
+                                        .build(),
+                                ).execute()
+                                val contentType = response.body?.contentType()
+                                val charset = contentType?.charset(StandardCharsets.UTF_8) ?: StandardCharsets.UTF_8
+                                WebResourceResponse(
+                                    response.body?.contentType()?.let { "${it.type}/${it.subtype}" } ?: "text/plain",
+                                    charset.name(),
+                                    response.body?.byteStream(),
+                                )
+                            } else {
+                                super.shouldInterceptRequest(view, request)
+                            }
                         }
 
                         override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceErrorCompat) {
