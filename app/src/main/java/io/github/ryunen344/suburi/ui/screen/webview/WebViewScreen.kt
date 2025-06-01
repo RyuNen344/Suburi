@@ -118,37 +118,41 @@ internal fun WebViewScreen(
                     savedState?.let(::restoreState)
                     savedView = this
 
+                    fun shouldInterceptRequest(client: OkHttpClient, request: WebResourceRequest): WebResourceResponse? {
+                        val url = request.url.toString().toHttpUrlOrNull()
+                        return if (url != null) {
+                            val response = client.newCall(
+                                Request.Builder()
+                                    .method(
+                                        method = request.method,
+                                        body = if (HttpMethod.permitsRequestBody(request.method)) {
+                                            "".toRequestBody()
+                                        } else {
+                                            null
+                                        },
+                                    )
+                                    .url(url)
+                                    .headers(request.requestHeaders.toHeaders())
+                                    .build(),
+                            ).execute()
+                            val contentType = response.body?.contentType()
+                            val charset = contentType?.charset(StandardCharsets.UTF_8) ?: StandardCharsets.UTF_8
+                            WebResourceResponse(
+                                response.body?.contentType()?.let { "${it.type}/${it.subtype}" } ?: "text/plain",
+                                charset.name(),
+                                response.body?.byteStream(),
+                            )
+                        } else {
+                            null
+                        }
+                    }
+
                     if (WebViewFeature.isFeatureSupported(WebViewFeature.SERVICE_WORKER_BASIC_USAGE)) {
                         val swController = ServiceWorkerControllerCompat.getInstance()
                         swController.setServiceWorkerClient(
                             object : ServiceWorkerClientCompat() {
                                 override fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? {
-                                    val url = request.url.toString().toHttpUrlOrNull()
-                                    return if (url != null) {
-                                        val response = cachedOkHttpClient.newCall(
-                                            Request.Builder()
-                                                .method(
-                                                    method = request.method,
-                                                    body = if (HttpMethod.permitsRequestBody(request.method)) {
-                                                        "".toRequestBody()
-                                                    } else {
-                                                        null
-                                                    },
-                                                )
-                                                .url(url)
-                                                .headers(request.requestHeaders.toHeaders())
-                                                .build(),
-                                        ).execute()
-                                        val contentType = response.body?.contentType()
-                                        val charset = contentType?.charset(StandardCharsets.UTF_8) ?: StandardCharsets.UTF_8
-                                        WebResourceResponse(
-                                            response.body?.contentType()?.let { "${it.type}/${it.subtype}" } ?: "text/plain",
-                                            charset.name(),
-                                            response.body?.byteStream(),
-                                        )
-                                    } else {
-                                        null
-                                    }
+                                    return shouldInterceptRequest(cachedOkHttpClient, request)
                                 }
                             },
                         )
@@ -159,32 +163,7 @@ internal fun WebViewScreen(
 
                     webViewClient = object : WebViewClientCompat() {
                         override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
-                            val url = request.url.toString().toHttpUrlOrNull()
-                            return if (url != null) {
-                                val response = cachedOkHttpClient.newCall(
-                                    Request.Builder()
-                                        .url(url)
-                                        .method(
-                                            method = request.method,
-                                            body = if (HttpMethod.permitsRequestBody(request.method)) {
-                                                "".toRequestBody()
-                                            } else {
-                                                null
-                                            },
-                                        )
-                                        .headers(request.requestHeaders.toHeaders())
-                                        .build(),
-                                ).execute()
-                                val contentType = response.body?.contentType()
-                                val charset = contentType?.charset(StandardCharsets.UTF_8) ?: StandardCharsets.UTF_8
-                                WebResourceResponse(
-                                    response.body?.contentType()?.let { "${it.type}/${it.subtype}" } ?: "text/plain",
-                                    charset.name(),
-                                    response.body?.byteStream(),
-                                )
-                            } else {
-                                super.shouldInterceptRequest(view, request)
-                            }
+                            return shouldInterceptRequest(cachedOkHttpClient, request)
                         }
 
                         override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceErrorCompat) {
