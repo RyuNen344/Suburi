@@ -28,13 +28,10 @@ import io.ktor.serialization.kotlinx.guessSerializer
 import io.ktor.serialization.kotlinx.serializerForTypeInfo
 import io.ktor.util.reflect.TypeInfo
 import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.InternalAPI
 import io.ktor.utils.io.charsets.Charset
 import io.ktor.utils.io.streams.inputStream
 import kotlinx.io.RawSource
 import kotlinx.io.asOutputStream
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -43,7 +40,6 @@ import kotlinx.serialization.json.okio.encodeToBufferedSink
 import okio.Buffer
 import okio.BufferedSource
 
-@OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class, InternalAPI::class)
 class OkioJsonConverter(private val format: Json) : ContentConverter {
 
     override suspend fun serialize(
