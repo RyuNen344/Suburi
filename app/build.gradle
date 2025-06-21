@@ -156,6 +156,14 @@ kotlin {
             'kotlinx.coroutines.ExperimentalForInheritanceCoroutinesApi',
             'kotlinx.coroutines.InternalForInheritanceCoroutinesApi',
 
+            // kotlinx.serialization
+            'kotlinx.serialization.ExperimentalSerializationApi',
+            'kotlinx.serialization.InternalSerializationApi',
+            'kotlinx.serialization.InternalSerializationApi',
+
+            // ktor
+            'io.ktor.utils.io.InternalAPI',
+
             // coil
             'coil3.annotation.ExperimentalCoilApi',
             'coil3.annotation.InternalCoilApi',
