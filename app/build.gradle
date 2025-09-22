@@ -28,9 +28,9 @@ def additionalExcludes = [
 ]
 
 android {
-    namespace 'io.github.ryunen344.suburi'
-    compileSdk 36
-    buildToolsVersion '36.0.0'
+    namespace = 'io.github.ryunen344.suburi'
+    compileSdk = 36
+    buildToolsVersion = '36.0.0'
 
     defaultConfig {
         applicationId "io.github.ryunen344.suburi"
@@ -41,7 +41,7 @@ android {
 
         testInstrumentationRunner "io.github.ryunen344.suburi.test.dagger.DaggerTestRunner"
         vectorDrawables {
-            useSupportLibrary true
+            useSupportLibrary = true
         }
     }
 
@@ -56,8 +56,8 @@ android {
             storePassword = DEFAULT_PASSWORD
             keyAlias = DEFAULT_ALIAS
             keyPassword = DEFAULT_PASSWORD
-            enableV3Signing true
-            enableV4Signing true
+            enableV3Signing = true
+            enableV4Signing = true
         }
     }
     buildTypes {
@@ -67,8 +67,8 @@ android {
 
         release {
             signingConfig = signingConfigs.debug
-            minifyEnabled true
-            shrinkResources true
+            minifyEnabled = true
+            shrinkResources = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -76,7 +76,7 @@ android {
     defaultExcludes += packaging.resources.excludes
 
     lint {
-        lintConfig rootProject.layout.projectDirectory.file(".lint/lint.xml").asFile
+        lintConfig = rootProject.layout.projectDirectory.file(".lint/lint.xml").asFile
         checkDependencies = true
         checkGeneratedSources = false
         checkReleaseBuilds = false
@@ -104,7 +104,7 @@ android {
         }
     }
     compileOptions {
-        coreLibraryDesugaringEnabled true
+        coreLibraryDesugaringEnabled = true
         sourceCompatibility libs.versions.jdk.get()
         targetCompatibility libs.versions.jdk.get()
     }
