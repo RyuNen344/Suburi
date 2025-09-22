@@ -61,7 +61,7 @@ class MatterStateMachine(
     context: CoroutineContext,
 ) : StateMachine<MatterState, MatterAction, MatterEffect>(
     initialState = initialState,
-    graph = Graph<MatterState, MatterAction, MatterEffect> {
+    graph = Graph {
         state<MatterState.Solid> {
             action<MatterAction.Melt> { _, _ ->
                 transition(MatterState.Liquid)
@@ -81,7 +81,7 @@ class MatterStateMachine(
             }
         }
     },
-    effectHandle = EffectHandle<MatterState, MatterAction, MatterEffect> { _, _, _, _ ->
+    effectHandle = EffectHandle { _, _, _, _ ->
         // noop
     },
     logger = TimberStateMachineLogger,

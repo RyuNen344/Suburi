@@ -71,9 +71,7 @@ class CoilModule {
                         )
 
                         // media
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            add(MediaDataSourceFetcher.Factory() to MediaDataSource::class)
-                        }
+                        add(MediaDataSourceFetcher.Factory() to MediaDataSource::class)
                     }
                 }
 

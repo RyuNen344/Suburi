@@ -55,6 +55,7 @@ class OkioJsonConverter(private val format: Json) : ContentConverter {
         }
 
         val buffer = Buffer().apply {
+            @Suppress("UNCHECKED_CAST")
             format.encodeToBufferedSink(
                 serializer = serializer as KSerializer<Any?>,
                 value = value,
