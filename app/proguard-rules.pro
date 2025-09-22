@@ -25,14 +25,6 @@
 -dontwarn com.google.j2objc.annotations.Weak
 -dontwarn com.google.j2objc.annotations.RetainedWith
 
-# OkHttp
-## until okhttp 5.0
-## https://github.com/square/okhttp/issues/6258
--dontwarn okhttp3.internal.platform.**
--dontwarn org.conscrypt.**
--dontwarn org.bouncycastle.**
--dontwarn org.openjsse.**
-
 # kotlinx-serialization
 # Serializer for classes with named companion objects are retrieved using `getDeclaredClasses`.
 # If you have any, replace classes with those containing named companion objects.
