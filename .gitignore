@@ -11,8 +11,7 @@
 .idea/AndroidProjectSystem.xml
 .idea/androidTestResultsUserPreferences.xml
 .idea/compiler.xml
-.idea/copilot.data.migration.agent.xml
-.idea/copilot.data.migration.edit.xml
+.idea/copilot.**.xml
 .idea/inspectionProfiles
 .idea/deploymentTargetSelector.xml
 .idea/.name
