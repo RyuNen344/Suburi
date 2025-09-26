@@ -20,6 +20,7 @@
 package io.github.ryunen344.suburi.data
 
 import android.net.TrafficStats
+import android.os.Build
 import okhttp3.Call
 import okhttp3.EventListener
 import okhttp3.Protocol
@@ -31,7 +32,14 @@ import java.net.Proxy
  */
 internal class TrafficStatsEventListener : EventListener() {
     override fun connectStart(call: Call, inetSocketAddress: InetSocketAddress, proxy: Proxy) {
-        TrafficStats.setThreadStatsTag(Thread.currentThread().id.toInt())
+        val currentThread = Thread.currentThread()
+        val tag = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            currentThread.threadId().toInt()
+        } else {
+            @Suppress("DEPRECATION")
+            currentThread.id.toInt()
+        }
+        TrafficStats.setThreadStatsTag(tag)
     }
 
     override fun connectEnd(call: Call, inetSocketAddress: InetSocketAddress, proxy: Proxy, protocol: Protocol?) {
