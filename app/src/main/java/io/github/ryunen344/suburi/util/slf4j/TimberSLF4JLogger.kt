@@ -278,7 +278,7 @@ class TimberSLF4JLogger(val tag: String) : Logger, Serializable {
 
     private fun logInternal(priority: Int, format: String?, vararg arguments: Any?) {
         val ft = MessageFormatter.arrayFormat(format, arguments)
-        Timber.tag(tag).log(priority, ft.throwable, ft.message, *ft.argArray)
+        Timber.tag(tag).log(priority, ft.throwable, ft.message, ft.argArray)
     }
 
     companion object {
