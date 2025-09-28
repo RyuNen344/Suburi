@@ -97,6 +97,7 @@ com-google-dagger-hilt-android-test = { module = "com.google.dagger:hilt-android
 com-google-dagger-hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "com-google-dagger" }
 com-google-truth-truth = { module = "com.google.truth:truth", version.ref = "com-google-truth" }
 com-squareup-okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+com-squareup-okhttp-coroutines = { module = "com.squareup.okhttp3:okhttp-coroutines", version.ref = "okhttp" }
 com-squareup-okhttp-logging = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp" }
 com-squareup-okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp" }
 com-squareup-okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
