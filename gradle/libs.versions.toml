@@ -49,7 +49,7 @@ robolectric = "4.16"
 serialization = "1.9.0"
 timber = "5.0.1"
 turbine = "1.2.1"
-version-catalog-update = "1.0.0"
+version-catalog-update = "1.0.1"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
