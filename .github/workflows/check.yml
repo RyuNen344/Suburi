@@ -74,7 +74,7 @@ jobs:
         shell: bash
         run: |
           chmod +x ./scripts/zip-build-data.sh && ./scripts/zip-build-data.sh;
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: ${{ !cancelled() }}
         with:
           name: unit-test-artifact
@@ -104,7 +104,7 @@ jobs:
         shell: bash
         run: |
           chmod +x ./scripts/zip-build-data.sh && ./scripts/zip-build-data.sh;
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: ${{ !cancelled() }}
         with:
           name: android-test-artifact
