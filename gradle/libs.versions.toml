@@ -1,6 +1,6 @@
 [versions]
 agp = "8.13.1"
-androidx-activity = "1.12.0"
+androidx-activity = "1.12.1"
 androidx-appcompat = "1.7.1"
 androidx-collection = "1.5.0"
 androidx-compose-animation = "1.10.0"
