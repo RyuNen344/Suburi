@@ -2,7 +2,7 @@
 agp = "8.13.2"
 androidx-activity = "1.12.4"
 androidx-appcompat = "1.7.1"
-androidx-collection = "1.5.0"
+androidx-collection = "1.6.0"
 androidx-compose-animation = "1.10.5"
 androidx-compose-foundation = "1.10.5"
 androidx-compose-material = "1.10.5"
