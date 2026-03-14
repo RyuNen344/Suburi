@@ -119,8 +119,7 @@ fun Assert<Location>.extras() = prop("extras", Location::getExtras)
 fun Assert<Location>.isEqualTo(other: Location) = given { actual ->
     if (VERSION.SDK_INT >= VERSION_CODES.S) {
         // from android S+, Location.equals() is well defined
-        if (actual == other) return
-        fail(other, actual)
+        if (actual != other) fail(other, actual)
     } else {
         all {
             provider().isEqualTo(other.provider)
