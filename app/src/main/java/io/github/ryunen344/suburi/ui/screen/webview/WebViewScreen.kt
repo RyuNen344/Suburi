@@ -42,7 +42,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.webkit.ServiceWorkerClientCompat
 import androidx.webkit.ServiceWorkerControllerCompat
-import androidx.webkit.WebResourceErrorCompat
 import androidx.webkit.WebViewClientCompat
 import androidx.webkit.WebViewFeature
 import okhttp3.Cache
@@ -135,12 +134,14 @@ internal fun WebViewScreen(
                                     .headers(request.requestHeaders.toHeaders())
                                     .build(),
                             ).execute()
-                            val contentType = response.body?.contentType()
+                            val body = response.body
+                            val contentType = body.contentType()
                             val charset = contentType?.charset(StandardCharsets.UTF_8) ?: StandardCharsets.UTF_8
+                            val mimeType = contentType?.let { "${it.type}/${it.subtype}" } ?: "text/plain"
                             WebResourceResponse(
-                                response.body?.contentType()?.let { "${it.type}/${it.subtype}" } ?: "text/plain",
+                                mimeType,
                                 charset.name(),
-                                response.body?.byteStream(),
+                                body.byteStream(),
                             )
                         } else {
                             null
@@ -164,14 +165,6 @@ internal fun WebViewScreen(
                     webViewClient = object : WebViewClientCompat() {
                         override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
                             return shouldInterceptRequest(cachedOkHttpClient, request)
-                        }
-
-                        override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceErrorCompat) {
-                            super.onReceivedError(view, request, error)
-                        }
-
-                        override fun onLoadResource(view: WebView?, url: String?) {
-                            super.onLoadResource(view, url)
                         }
 
                         override fun doUpdateVisitedHistory(view: WebView, url: String?, isReload: Boolean) {
