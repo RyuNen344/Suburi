@@ -269,7 +269,7 @@ class TimberHttpLoggingInterceptor(
     }
 
     private fun bodyIsStreaming(response: Response): Boolean {
-        val contentType = response.body?.contentType()
+        val contentType = response.body.contentType()
         return contentType != null && contentType.type == "text" && contentType.subtype == "event-stream"
     }
 }
