@@ -134,12 +134,14 @@ internal fun WebViewScreen(
                                     .headers(request.requestHeaders.toHeaders())
                                     .build(),
                             ).execute()
-                            val contentType = response.body.contentType()
+                            val body = response.body
+                            val contentType = body.contentType()
                             val charset = contentType?.charset(StandardCharsets.UTF_8) ?: StandardCharsets.UTF_8
+                            val mimeType = contentType?.let { "${it.type}/${it.subtype}" } ?: "text/plain"
                             WebResourceResponse(
-                                response.body.contentType()?.let { "${it.type}/${it.subtype}" } ?: "text/plain",
+                                mimeType,
                                 charset.name(),
-                                response.body.byteStream(),
+                                body.byteStream(),
                             )
                         } else {
                             null
