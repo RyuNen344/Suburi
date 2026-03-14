@@ -36,8 +36,7 @@ run dcopy ".*/build/generated/ksp/debug/kotlin"
 run dcopy ".*/build/generated/sqldelight/code"
 run dcopy ".*/build/generated/hilt/component_sources/debug"
 run dcopy ".*/build/generated/hilt/component_tree/debug"
-run dcopy ".*/build/intermediates/javac/debug/compileDebugJavaWithJavac/classes"
-run dcopy ".*/build/tmp/kotlin-classes/debug"
+run dcopy ".*/build/intermediates/classes/debug/transformDebugClassesWithAsm/dirs"
 
 # apk
 info "collect apk"

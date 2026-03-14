@@ -14,8 +14,10 @@ tasks.register("jacocoReport", JacocoReport) {
         layout.buildDirectory.dir("generated/hilt/component_trees/debug"),
     )
     classDirectories.from.addAll(
-        [layout.buildDirectory.dir("intermediates/classes/debug"), layout.buildDirectory.dir("intermediates/javac/debug")].collectMany { dir ->
-            dir.get().asFileTree.matching {
+        layout.buildDirectory.dir("intermediates/classes/debug/transformDebugClassesWithAsm/dirs")
+            .get()
+            .asFileTree
+            .matching {
                 excludes.addAll(
                     [
                         // android
@@ -39,8 +41,8 @@ tasks.register("jacocoReport", JacocoReport) {
                         "**/hilt_aggregated_deps",
                     ]
                 )
-            }.files
-        }
+            }
+            .files
     )
     executionData.from.addAll(
         layout.buildDirectory.asFileTree.matching {
