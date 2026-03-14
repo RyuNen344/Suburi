@@ -95,6 +95,7 @@ auto-mutton-recipe-savedstate = { module = "io.github.ryunen344.mutton:auto-mutt
 com-google-dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "com-google-dagger" }
 com-google-dagger-hilt-android-test = { module = "com.google.dagger:hilt-android-testing", version.ref = "com-google-dagger" }
 com-google-dagger-hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "com-google-dagger" }
+com-google-ksp-gradle-plugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "com-google-ksp" }
 com-google-truth-truth = { module = "com.google.truth:truth", version.ref = "com-google-truth" }
 com-squareup-okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 com-squareup-okhttp-coroutines = { module = "com.squareup.okhttp3:okhttp-coroutines", version.ref = "okhttp" }
@@ -124,6 +125,7 @@ io-mockk-agent = { module = "io.mockk:mockk-agent-jvm", version.ref = "mockk" }
 io-mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockk" }
 io-nlopez-compose-rules-detekt = { module = "io.nlopez.compose.rules:detekt", version.ref = "detekt-compose-rules" }
 junit = { module = "junit:junit", version.ref = "junit" }
+org-jetbrains-kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 org-jetbrains-kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 org-jetbrains-kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 org-jetbrains-kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
@@ -143,7 +145,6 @@ com-google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "com-g
 io-gitlab-arturbosch-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 jacoco = { id = "jacoco" }
 nl-littlerobots-version-catalog-update = { id = "nl.littlerobots.version-catalog-update", version.ref = "version-catalog-update" }
-org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 org-jetbrains-kotlin-plugin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 org-jetbrains-kotlin-plugin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 org-jetbrains-kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

@@ -6,7 +6,6 @@ plugins {
     alias libs.plugins.com.android.application
     alias libs.plugins.com.google.dagger.hilt
     alias libs.plugins.com.google.devtools.ksp
-    alias libs.plugins.org.jetbrains.kotlin.android
     alias libs.plugins.org.jetbrains.kotlin.plugin.compose
     alias libs.plugins.org.jetbrains.kotlin.plugin.parcelize
     alias libs.plugins.org.jetbrains.kotlin.plugin.serialization
@@ -29,13 +28,19 @@ def additionalExcludes = [
 
 android {
     namespace = 'io.github.ryunen344.suburi'
-    compileSdk = 36
-    buildToolsVersion = '36.0.0'
+    compileSdk {
+        version = release(36)
+    }
+    buildToolsVersion = '36.1.0'
 
     defaultConfig {
         applicationId "io.github.ryunen344.suburi"
-        minSdk 23
-        targetSdk 36
+        minSdk {
+            version = release(23)
+        }
+        targetSdk {
+            version = release(36)
+        }
         versionCode 1
         versionName "1.0.0"
 
@@ -52,7 +57,7 @@ android {
 
     signingConfigs {
         debug {
-            storeFile = rootProject.layout.projectDirectory.file("keystore/debug.keystore").asFile
+            storeFile = layout.settingsDirectory.file("keystore/debug.keystore").asFile
             storePassword = DEFAULT_PASSWORD
             keyAlias = DEFAULT_ALIAS
             keyPassword = DEFAULT_PASSWORD
@@ -76,7 +81,7 @@ android {
     defaultExcludes += packaging.resources.excludes
 
     lint {
-        lintConfig = rootProject.layout.projectDirectory.file(".lint/lint.xml").asFile
+        lintConfig = layout.settingsDirectory.file(".lint/lint.xml").asFile
         checkDependencies = true
         checkGeneratedSources = false
         checkReleaseBuilds = false
@@ -86,10 +91,10 @@ android {
     sourceSets {
         def sharedTestDir = "src/sharedTest/java"
         test {
-            java.srcDir sharedTestDir
+            kotlin.srcDir sharedTestDir
         }
         androidTest {
-            java.srcDir sharedTestDir
+            kotlin.srcDir sharedTestDir
         }
     }
     adbOptions.timeOutInMs = 180000
@@ -195,7 +200,7 @@ composeCompiler {
     metricsDestination = layout.buildDirectory.dir("compose_compiler")
     reportsDestination = layout.buildDirectory.dir("compose_compiler")
     stabilityConfigurationFiles = [
-        rootProject.layout.projectDirectory.file("stability_config.conf")
+        layout.settingsDirectory.file("stability_config.conf")
     ]
 }
 
@@ -271,6 +276,7 @@ dependencies {
     testImplementation libs.com.willowtreeapps.assertk
     testImplementation libs.io.mockk
     testImplementation libs.io.mockk.agent
+    testImplementation libs.io.coil.test
     testImplementation libs.io.ktor.client.mock
     testImplementation libs.org.jetbrains.kotlin.test
     testImplementation libs.org.jetbrains.kotlin.reflect
@@ -292,6 +298,7 @@ dependencies {
     androidTestImplementation libs.com.willowtreeapps.assertk
     androidTestImplementation libs.io.mockk
     androidTestImplementation libs.io.mockk.android
+    androidTestImplementation libs.io.coil.test
     androidTestImplementation libs.io.ktor.client.mock
     androidTestImplementation libs.org.jetbrains.kotlin.test
     androidTestImplementation libs.org.jetbrains.kotlin.reflect
