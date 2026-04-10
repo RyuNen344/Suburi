@@ -343,7 +343,7 @@ class OkioJsonConverterTest {
         assertFailure { serializer.testDeserialize<DogDTO>(ByteReadChannel(extraString)) }
             .isInstanceOf(JsonConvertException::class)
             .hasMessage(
-                "Illegal input: Encountered an unknown key 'color' at offset 24 at path: $\nUse 'ignoreUnknownKeys = true' in 'Json {}' builder or '@JsonIgnoreUnknownKeys' annotation to ignore unknown keys.\nJSON input: {\"age\":8,\"name\":\"Auri\",\"color\":\"Black\"}",
+                "Illegal input: Unexpected JSON token at offset 24: Encountered an unknown key 'color' at path: $\nUse 'ignoreUnknownKeys = true' in 'Json {}' builder or '@JsonIgnoreUnknownKeys' annotation to ignore unknown keys.\nJSON input: {\"age\":8,\"name\":\"Auri\",\"color\":\"Black\"}",
             )
     }
 
