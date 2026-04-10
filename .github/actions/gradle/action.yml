@@ -1,6 +1,10 @@
 # $schema: https://json.schemastore.org/github-action.json
 name: "setup gradle"
-description: "setup gradle"
+description: "ditto"
+inputs:
+  cache-encryption-key:
+    description: "use `secrets.GRADLE_ENCRYPTION_KEY` via `openssl rand -base64 16`"
+    required: true
 runs:
   using: "composite"
   steps:
@@ -10,6 +14,7 @@ runs:
         gradle-version: wrapper
         cache-cleanup: always
         artifact-retention-days: 3
+        cache-encryption-key: ${{ inputs.cache-encryption-key }}
 
     - name: list toolchain
       shell: bash
