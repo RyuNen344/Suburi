@@ -5,7 +5,7 @@ inputs:
   api-level:
     description: 'API level of the platform and system image - e.g. 23 for Android Marshmallow, 29 for Android 10'
     required: false
-    default: "35"
+    default: "36"
   prepare-script:
     description: "custom script to run before the main script - e.g. `./gradlew assembleDebugAndroidTest`"
     required: false
