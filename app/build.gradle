@@ -14,18 +14,6 @@ plugins {
 
 apply from: rootProject.layout.projectDirectory.file("gradle/jacoco.gradle")
 
-def defaultExcludes = []
-def additionalExcludes = [
-    "/META-INF/{AL2.0,LGPL2.1}",
-    "**/NOTICE*",
-    "/META-INF/licenses/ASM",
-    "/META-INF/versions/**",
-    "**/LICENSE*",
-    "/LICENSE-junit.txt",
-    "/junit/**",
-    "DebugProbesKt.bin",
-]
-
 android {
     namespace = 'io.github.ryunen344.suburi'
     compileSdk {
@@ -78,7 +66,17 @@ android {
         }
     }
 
-    defaultExcludes += packaging.resources.excludes
+    packaging.resources.excludes += [
+        "**/COPYRIGHT*",
+        "/META-INF/{AL2.0,LGPL2.1}",
+        "**/NOTICE*",
+        "/META-INF/licenses/ASM",
+        "/META-INF/versions/**",
+        "**/LICENSE*",
+        "/LICENSE-junit.txt",
+        "/junit/**",
+        "DebugProbesKt.bin",
+    ]
 
     lint {
         lintConfig = layout.settingsDirectory.file(".lint/lint.xml").asFile
@@ -183,16 +181,6 @@ androidComponents {
         builder.hostTests[HostTestBuilder.SCREENSHOT_TEST_TYPE].enable = false
         builder.deviceTests[DeviceTestBuilder.ANDROID_TEST_TYPE].enable = debug
         builder.deviceTests[DeviceTestBuilder.ANDROID_TEST_TYPE].enableCodeCoverage = debug
-    }
-    onVariants(selector()) { variant ->
-        // resource
-        def excludes = defaultExcludes + additionalExcludes
-
-        // default apk
-        variant.packaging.resources.excludes.addAll(excludes)
-
-        // androidTest apk
-        variant.androidTest?.packaging?.resources?.excludes?.addAll(excludes)
     }
 }
 
