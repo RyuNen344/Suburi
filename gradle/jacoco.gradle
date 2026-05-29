@@ -56,6 +56,9 @@ jacoco {
 }
 
 android {
+    jacoco {
+        version = libs.versions.jacoco.get()
+    }
     testOptions {
         unitTests.all { test ->
             jacoco {
