@@ -63,6 +63,7 @@ android {
                 includeNoLocationClasses = true
                 excludes = [
                     'jdk.internal.*',
+                    'net.bytebuddy.*',
 
                     // https://github.com/jacoco/jacoco/issues/1357
                     'kotlin.coroutines.jvm.internal.DebugProbesKt',
