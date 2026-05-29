@@ -56,6 +56,9 @@ jacoco {
 }
 
 android {
+    jacoco {
+        version = libs.versions.jacoco.get()
+    }
     testOptions {
         unitTests.all { test ->
             jacoco {
@@ -63,7 +66,6 @@ android {
                 includeNoLocationClasses = true
                 excludes = [
                     'jdk.internal.*',
-                    'net.bytebuddy.*',
 
                     // https://github.com/jacoco/jacoco/issues/1357
                     'kotlin.coroutines.jvm.internal.DebugProbesKt',
