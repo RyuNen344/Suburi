@@ -140,11 +140,10 @@ class OkioJsonConverterTest {
                 "Serializing collections of different element types is not yet supported. Selected serializers: [kotlin.String, kotlin.Int]",
             )
 
-        @Suppress("MaxLineLength")
         assertFailure { serializer.testDeserialize<Map<String, Any>>(ByteReadChannel(string)) }
             .isInstanceOf(SerializationException::class)
             .hasMessage(
-                "Serializer for class 'Map' is not found.\nPlease ensure that class is marked as '@Serializable' and that the serialization compiler plugin is applied.\n",
+                "Serializer for type argument 'Any' is not found for 'Map'. Ensure that the listed type is marked as '@Serializable'.",
             )
     }
 
