@@ -141,7 +141,7 @@ jobs:
         shell: bash
         run: |
           ./gradlew jacocoReport
-      - uses: madrapps/jacoco-report@v1.7.2
+      - uses: madrapps/jacoco-report@v1.8.0
         with:
           paths: |
             ${{ github.workspace }}/app/build/reports/jacoco/jacocoReport/jacocoReport.xml
