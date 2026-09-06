@@ -23,10 +23,7 @@ import timber.log.Timber
 
 class NoopTree : Timber.Tree() {
 
-    override fun isLoggable(tag: String?, priority: Int): Boolean {
-        // always return false to redact logging
-        return false
-    }
+    override fun isLoggable(tag: String?, priority: Int): Boolean = false // disable all logging (prevents message formatting)
 
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
         // noop
