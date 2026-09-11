@@ -19,64 +19,109 @@
 
 package io.github.ryunen344.suburi.util.timber
 
+import okio.utf8Size
 import timber.log.Timber
 
 /**
- * A [Timber.DebugTree] that chunks log messages for Multibyte characters.
+ * A [Timber.DebugTree] that safely chunks UTF-8 log messages.
  */
 class ChunkedDebugTree : Timber.DebugTree() {
 
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-        val bytes = message.toByteArray()
-        if (bytes.size <= MAX_LOG_BYTES) {
-            super.log(priority, tag, message, t)
+        if (message.requireChunking) {
+            chunkingLog(priority, tag, message, t)
         } else {
-            bytes.chunked().forEach { chunk ->
-                super.log(priority, tag, chunk, t)
-            }
+            super.log(priority, tag, message, t)
         }
     }
 
-    private fun ByteArray.chunked(chunkSize: Int = MAX_LOG_BYTES): Sequence<String> = sequence {
-        var offset = 0
-        while (offset < size) {
-            var end = (offset + chunkSize).coerceAtMost(size)
-            val newline = indexOf(NEW_LINE_BYTE, offset, end)
-            if (newline != -1) {
-                end = newline + 1
-                yield(decodeToString(offset, end))
+    private fun chunkingLog(priority: Int, tag: String?, message: String, t: Throwable?) {
+        var chunkStart = 0
+        var index = 0
+        var chunkByteCount = 0
+
+        while (index < message.length) {
+            val codeUnit = message[index]
+            val isSurrogatePair = message.isSurrogatePairAt(index)
+            val codeUnitCount = if (isSurrogatePair) 2 else 1
+            val utf8ByteCount = codeUnit.utf8ByteCount(isSurrogatePair)
+
+            if (chunkByteCount + utf8ByteCount > MAX_LOG_BYTES) {
+                super.log(
+                    priority,
+                    tag,
+                    message.substring(chunkStart, index),
+                    t,
+                )
+
+                chunkStart = index
+                chunkByteCount = 0
             } else {
-                while (end > offset) {
-                    val decoded = decodeToString(offset, end)
-                    if (decoded.lastOrNull() == REPLACEMENT_CHARACTER) {
-                        end--
-                    } else {
-                        yield(decoded)
-                        break
-                    }
+                index += codeUnitCount
+                chunkByteCount += utf8ByteCount
+
+                if (codeUnit == NEW_LINE) {
+                    super.log(
+                        priority,
+                        tag,
+                        message.substring(chunkStart, index),
+                        t,
+                    )
+
+                    chunkStart = index
+                    chunkByteCount = 0
                 }
             }
-            offset = end
+        }
+
+        if (chunkStart < message.length) {
+            super.log(
+                priority,
+                tag,
+                message.substring(chunkStart),
+                t,
+            )
         }
     }
 
-    private fun ByteArray.indexOf(
-        byte: Byte,
-        startIndex: Int,
-        endIndex: Int,
-    ): Int {
-        for (i in startIndex until endIndex) {
-            if (this[i] == byte) return i
-        }
-        return -1
+    private fun String.isSurrogatePairAt(index: Int): Boolean {
+        return this[index] in HIGH_SURROGATE_START..HIGH_SURROGATE_END &&
+            index + 1 < length &&
+            this[index + 1] in LOW_SURROGATE_START..LOW_SURROGATE_END
     }
+
+    private fun Char.utf8ByteCount(isSurrogatePair: Boolean): Int {
+        return when {
+            this < UTF8_TWO_BYTE_THRESHOLD -> 1
+            this < UTF8_THREE_BYTE_THRESHOLD -> 2
+            this !in HIGH_SURROGATE_START..LOW_SURROGATE_END -> 3
+            isSurrogatePair -> 4
+            else -> 1
+        }
+    }
+
+    private val String.requireChunking: Boolean
+        get() = length > GUARANTEED_FIT_CHAR_COUNT && utf8Size() > MAX_LOG_BYTES
 
     private companion object {
         /**
          * [Timber.DebugTree.MAX_LOG_LENGTH] - 1
          */
         private const val MAX_LOG_BYTES = 3999
-        private val NEW_LINE_BYTE = '\n'.code.toByte()
-        private const val REPLACEMENT_CHARACTER = '\uFFFD'
+
+        /**
+         * A UTF-16 code unit requires at most 3 bytes in UTF-8.
+         */
+        private const val GUARANTEED_FIT_CHAR_COUNT = MAX_LOG_BYTES / 3
+
+        private const val UTF8_TWO_BYTE_THRESHOLD = '\u0080'
+        private const val UTF8_THREE_BYTE_THRESHOLD = '\u0800'
+
+        private const val HIGH_SURROGATE_START = '\uD800'
+        private const val HIGH_SURROGATE_END = '\uDBFF'
+        private const val LOW_SURROGATE_START = '\uDC00'
+        private const val LOW_SURROGATE_END = '\uDFFF'
+
+        private const val NEW_LINE = '\n'
     }
 }
