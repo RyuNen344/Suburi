@@ -19,15 +19,12 @@
 
 package io.github.ryunen344.suburi.test.assertk.view
 
-import android.os.Build.VERSION
-import android.os.Build.VERSION_CODES
 import android.view.MotionEvent
 import android.view.MotionEvent.PointerCoords
 import android.view.MotionEvent.PointerProperties
 import assertk.Assert
 import assertk.assertions.isEqualTo
 import assertk.assertions.prop
-import assertk.fail
 
 /**
  * assertk extension of [androidx.test.ext.truth.view.MotionEventSubject.hasAction]
@@ -37,13 +34,7 @@ fun Assert<MotionEvent>.hasAction(action: Int) = prop("action") { actual -> actu
 /**
  * assertk extension of [androidx.test.ext.truth.view.MotionEventSubject.hasActionButton]
  */
-fun Assert<MotionEvent>.hasActionButton(actionButton: Int) = prop("actionButton") { actual ->
-    if (VERSION.SDK_INT < VERSION_CODES.M) {
-        fail("hasActionButton is not supported on API < 23")
-    } else {
-        actual.actionButton
-    }
-}.isEqualTo(actionButton)
+fun Assert<MotionEvent>.hasActionButton(actionButton: Int) = prop("actionButton") { actual -> actual.actionButton }.isEqualTo(actionButton)
 
 /**
  * assertk extension of [androidx.test.ext.truth.view.MotionEventSubject.hasButtonState]
