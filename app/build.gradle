@@ -100,6 +100,17 @@ android {
         unitTests.includeAndroidResources = true
         unitTests.returnDefaultValues = true
         unitTests.all { test ->
+            test.jvmArgs += [
+                "--add-opens=java.base/java.lang=ALL-UNNAMED",
+                "--add-opens=java.base/java.util=ALL-UNNAMED",
+                "--add-opens=java.base/java.io=ALL-UNNAMED",
+                "--add-opens=java.base/java.net=ALL-UNNAMED",
+                "--add-opens=java.base/java.security=ALL-UNNAMED",
+                "--add-opens=java.base/java.text=ALL-UNNAMED",
+                "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED",
+                "--add-opens=java.desktop/java.awt.font=ALL-UNNAMED",
+                "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+            ]
             test.systemProperty("robolectric.logging", "stdout")
             test.systemProperty("robolectric.logging.enabled", "true")
             test.systemProperty("robolectric.graphicsMode", "NATIVE")
@@ -115,7 +126,7 @@ android {
 
 kotlin {
     compilerOptions {
-        jvmTarget = JvmTarget.fromTarget(libs.versions.jdk.get())
+        jvmTarget = libs.versions.jdk.map(JvmTarget::fromTarget)
         optIn = [
             // compose animation
             'androidx.compose.animation.core.ExperimentalAnimatableApi',
