@@ -33,9 +33,6 @@ android {
         versionName "1.0.0"
 
         testInstrumentationRunner "io.github.ryunen344.suburi.test.dagger.DaggerTestRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
     }
 
     buildFeatures {
