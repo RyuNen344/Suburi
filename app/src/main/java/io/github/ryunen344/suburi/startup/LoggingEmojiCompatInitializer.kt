@@ -22,7 +22,6 @@ package io.github.ryunen344.suburi.startup
 import android.content.Context
 import android.graphics.Color
 import android.os.Looper
-import android.os.Process
 import androidx.core.os.HandlerCompat
 import androidx.emoji2.text.DefaultEmojiCompatConfig
 import androidx.emoji2.text.EmojiCompat
@@ -36,7 +35,6 @@ import androidx.tracing.Trace
 import io.github.ryunen344.suburi.BuildConfig
 import timber.log.Timber
 import java.util.concurrent.LinkedBlockingDeque
-import java.util.concurrent.ThreadFactory
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
@@ -76,8 +74,9 @@ class LoggingEmojiCompatInitializer : Initializer<Unit> {
                                 FONT_LOAD_TIMEOUT_SECONDS,
                                 TimeUnit.SECONDS,
                                 LinkedBlockingDeque(),
-                                ThreadFactory { Thread(it, THREAD_NAME).apply { priority = Process.THREAD_PRIORITY_BACKGROUND } },
-                            ),
+                            ) {
+                                Thread(it, THREAD_NAME)
+                            },
                         )
                     }
                 }
@@ -97,12 +96,14 @@ class LoggingEmojiCompatInitializer : Initializer<Unit> {
     private fun delayUntilFirstResume(context: Context) {
         val initializer = AppInitializer.getInstance(context)
         val lifecycle = initializer.initializeComponent(ProcessLifecycleInitializer::class.java).lifecycle
-        lifecycle.addObserver(object : DefaultLifecycleObserver {
-            override fun onResume(owner: LifecycleOwner) {
-                loadEmojiCompatAfterDelay()
-                lifecycle.removeObserver(this)
-            }
-        })
+        lifecycle.addObserver(
+            object : DefaultLifecycleObserver {
+                override fun onResume(owner: LifecycleOwner) {
+                    loadEmojiCompatAfterDelay()
+                    lifecycle.removeObserver(this)
+                }
+            },
+        )
     }
 
     /**
